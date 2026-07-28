@@ -250,9 +250,7 @@ export default function App() {
           }
         }
 
-        if (fromServer) {
-          setSyncStatus(prev => prev === 'offline' ? 'synced' : 'synced');
-        }
+        setSyncStatus('synced');
       },
       (err) => {
         console.warn("Firestore permission issue for kids, loading local storage:", err.message);
@@ -279,9 +277,7 @@ export default function App() {
           tasksInitialLoadDoneRef.current = true;
         }
 
-        if (fromServer) {
-          setSyncStatus('synced');
-        }
+        setSyncStatus('synced');
       },
       (err) => {
         console.warn("Firestore permission issue for tasks, loading local storage:", err.message);
@@ -1051,8 +1047,8 @@ export default function App() {
                   }`}
                 >
                   <ListFilter className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Día a día</span>
-                  <span className="sm:hidden">Día</span>
+                  <span className="hidden sm:block">Día a día</span>
+                  <span className="block sm:hidden">Día</span>
                 </button>
                 <button
                   onClick={() => setViewMode('weekly')}
@@ -1061,8 +1057,8 @@ export default function App() {
                   }`}
                 >
                   <LayoutGrid className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Semana</span>
-                  <span className="sm:hidden">Sem.</span>
+                  <span className="hidden sm:block">Semana</span>
+                  <span className="block sm:hidden">Sem.</span>
                 </button>
                 <button
                   onClick={() => setViewMode('completed')}
@@ -1071,8 +1067,8 @@ export default function App() {
                   }`}
                 >
                   <CheckCircle className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Completadas</span>
-                  <span className="sm:hidden">Hechas</span>
+                  <span className="hidden sm:block">Completadas</span>
+                  <span className="block sm:hidden">Hechas</span>
                 </button>
               </div>
 
@@ -1252,38 +1248,40 @@ export default function App() {
                 </div>
 
                 {/* Vista móvil: tarjetas */}
-                <div className="md:hidden space-y-3">
+                <div className="md:hidden space-y-4">
                   {[...DAILY_TASK_TEMPLATES]
                     .sort((a, b) => (a.isExtra ? 1 : 0) - (b.isExtra ? 1 : 0))
                     .map((tmpl) => (
-                      <div key={tmpl.templateId} className={`p-4 rounded-2xl border ${tmpl.isExtra ? 'bg-indigo-50/70 border-indigo-200' : 'bg-white border-slate-200'}`}>
-                        <div className="flex items-center justify-between mb-3">
+                      <div key={tmpl.templateId} className={`p-4 rounded-2xl border shadow-sm ${tmpl.isExtra ? 'bg-gradient-to-br from-indigo-50 to-white border-indigo-200' : 'bg-white border-slate-200'}`}>
+                        <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center space-x-2 font-semibold text-slate-800">
-                            <span className="text-lg">{tmpl.icon}</span>
-                            <span>{tmpl.title}</span>
-                            {tmpl.isExtra && <span className="text-[10px] bg-indigo-200 text-indigo-800 px-1.5 py-0.5 rounded font-bold">EXTRA</span>}
+                            <span className="text-2xl bg-slate-100 p-1.5 rounded-xl">{tmpl.icon}</span>
+                            <div className="flex flex-col">
+                              <span className="text-sm">{tmpl.title}</span>
+                              {tmpl.isExtra && <span className="text-[10px] bg-indigo-200 text-indigo-800 px-1.5 py-0.5 rounded font-bold w-fit">EXTRA</span>}
+                            </div>
                           </div>
-                          <span className="font-bold text-emerald-600">{tmpl.reward.toFixed(2)}€</span>
+                          <span className="font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg text-sm">{tmpl.reward.toFixed(2)}€</span>
                         </div>
-                        <div className="grid grid-cols-7 gap-1">
+                        <div className="flex items-center justify-between gap-1">
                           {DAYS.map(day => {
                             const task = tasks.find(t => t.assignedTo === activeKidId && t.day === day && (t.title.includes(tmpl.title.substring(0, 10)) || t.id.includes(tmpl.templateId)));
                             const isApproved = task?.status === 'approved';
                             const isDone = task?.status === 'completed';
 
                             return (
-                              <div key={day} className="flex flex-col items-center gap-1">
-                                <span className="text-[10px] font-bold text-slate-500">{day.substring(0, 3)}</span>
+                              <div key={day} className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+                                <span className="text-[10px] font-bold text-slate-500 uppercase">{day.substring(0, 3)}</span>
                                 {task ? (
                                   <button
                                     onClick={() => {
                                       if (task.status === 'pending') handleMarkTaskCompleted(task.id);
                                     }}
-                                    className={`w-10 h-10 rounded-xl font-bold flex items-center justify-center transition ${
-                                      isApproved 
-                                        ? 'bg-emerald-500 text-white' 
-                                        : isDone 
-                                        ? 'bg-sky-400 text-white animate-pulse' 
+                                    className={`w-full aspect-square max-w-[44px] rounded-xl font-bold flex items-center justify-center transition shadow-sm ${
+                                      isApproved
+                                        ? 'bg-emerald-500 text-white shadow-emerald-200'
+                                        : isDone
+                                        ? 'bg-sky-400 text-white shadow-sky-200 animate-pulse'
                                         : 'bg-slate-100 text-slate-400 hover:bg-indigo-200 hover:text-indigo-900'
                                     }`}
                                     title={`${day}: ${task.title} - ${isApproved ? 'Aprobada' : isDone ? 'En revisión' : 'Hacer clic para marcar'}`}
@@ -1291,7 +1289,7 @@ export default function App() {
                                     {isApproved ? <Check className="w-5 h-5" /> : isDone ? <Clock className="w-5 h-5" /> : <Circle className="w-4 h-4 text-slate-300" />}
                                   </button>
                                 ) : (
-                                  <span className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-300">-</span>
+                                  <span className="w-full aspect-square max-w-[44px] rounded-xl flex items-center justify-center text-slate-300 bg-slate-50">-</span>
                                 )}
                               </div>
                             );
@@ -1364,6 +1362,101 @@ export default function App() {
                 </div>
               </div>
             )}
+
+            {viewMode === 'completed' && (
+              <div className="pt-2 space-y-4">
+                {tasks
+                  .filter(t => t.assignedTo === activeKidId && (t.status === 'completed' || t.status === 'approved'))
+                  .sort((a, b) => {
+                    const statusOrder = { approved: 0, completed: 1 };
+                    return (statusOrder[a.status] || 2) - (statusOrder[b.status] || 2);
+                  })
+                  .length === 0 ? (
+                  <div className="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                    <CheckCircle className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                    <p className="text-sm font-semibold text-slate-500">¡No hay tareas completadas aún!</p>
+                    <p className="text-xs text-slate-400 mt-1">Marca tus tareas como "Hecho" para verlas aquí.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {tasks
+                      .filter(t => t.assignedTo === activeKidId && (t.status === 'completed' || t.status === 'approved'))
+                      .sort((a, b) => {
+                        const statusOrder = { approved: 0, completed: 1 };
+                        return (statusOrder[a.status] || 2) - (statusOrder[b.status] || 2);
+                      })
+                      .map(task => {
+                        const isApproved = task.status === 'approved';
+
+                        return (
+                          <div
+                            key={task.id}
+                            className={`p-4 rounded-2xl border transition flex flex-col justify-between space-y-3 ${
+                              isApproved
+                                ? 'bg-emerald-50/70 border-emerald-200'
+                                : 'bg-sky-50/70 border-sky-200'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-center space-x-3">
+                                <span className="text-3xl p-2 bg-white/70 rounded-xl">{task.icon || '⭐'}</span>
+                                <div>
+                                  <h3 className={`font-bold text-slate-800 text-sm ${isApproved ? 'line-through text-slate-500' : ''}`}>
+                                    {task.title}
+                                  </h3>
+                                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                    <span className="text-[10px] px-2 py-0.5 bg-white/70 text-slate-600 font-semibold rounded-md">
+                                      {task.day}
+                                    </span>
+                                    <span className="text-[10px] px-2 py-0.5 bg-white/70 text-slate-500 font-medium rounded-md">
+                                      {task.category}
+                                    </span>
+                                    {task.isExtra && (
+                                      <span className="text-[10px] px-2 py-0.5 bg-indigo-100 text-indigo-700 font-bold rounded-md">
+                                        <Flame className="w-3 h-3 text-indigo-500 inline mr-0.5" /> BONO
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              <span className={`text-base font-black ${task.isExtra ? 'text-indigo-600' : 'text-emerald-600'}`}>
+                                +{Number(task.reward).toFixed(2)}€
+                              </span>
+                            </div>
+
+                            {task.aiFeedback && (
+                              <div className="bg-white/70 p-2.5 rounded-xl text-xs space-y-1 text-slate-700">
+                                <p className="font-bold text-sky-900 flex items-center gap-1">
+                                  <Sparkles className="w-3.5 h-3.5 text-sky-600" /> Comentario IA:
+                                </p>
+                                <p>{task.aiFeedback}</p>
+                              </div>
+                            )}
+
+                            {task.photoUrl && (
+                              <div className="flex items-start space-x-3 bg-white/70 p-3 rounded-xl">
+                                <img src={task.photoUrl} alt="Prueba tarea" className="w-16 h-16 object-cover rounded-lg border border-sky-200 shrink-0" />
+                              </div>
+                            )}
+
+                            <div className="pt-1 flex items-center space-x-2">
+                              {isApproved ? (
+                                <div className="w-full py-2 bg-emerald-100 text-emerald-800 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5">
+                                  <CheckCircle className="w-4 h-4 text-emerald-600" /> ¡Completada y Sumada!
+                                </div>
+                              ) : (
+                                <div className="w-full py-2 bg-sky-100 text-sky-800 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5">
+                                  <Clock className="w-4 h-4 text-sky-600 animate-pulse" /> Esperando aprobación de los papás
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </>
       )}
@@ -1401,9 +1494,9 @@ export default function App() {
               <Users className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Familia:</span>
               <span className="font-mono bg-indigo-200 text-indigo-900 px-1.5 py-0.5 rounded text-[11px]">{familyId}</span>
-              {syncStatus === 'synced' && <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 ml-1" title="Sincronizado con la nube"></span>}
-              {syncStatus === 'offline' && <span className="inline-block w-2.5 h-2.5 rounded-full bg-rose-500 ml-1" title="Sin conexión con la nube"></span>}
-              {syncStatus === 'connecting' && <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse ml-1" title="Conectando..."></span>}
+              {syncStatus === 'synced' && <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 ml-1" title="Sincronizado con la nube">●</span>}
+              {syncStatus === 'offline' && <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-rose-100 text-rose-600 ml-1" title="Sin conexión con la nube">●</span>}
+              {syncStatus === 'connecting' && <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 text-amber-600 ml-1 animate-pulse" title="Conectando...">●</span>}
             </button>
 
             <div className="bg-slate-100 p-1 rounded-xl flex items-center space-x-1">
@@ -1414,8 +1507,7 @@ export default function App() {
                 }`}
               >
                 <User className="w-3.5 h-3.5 text-indigo-600" />
-                <span className="hidden sm:inline">Modo Niños</span>
-                <span className="sm:hidden">Niños</span>
+                <span>Niños</span>
               </button>
 
               <button
