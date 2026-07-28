@@ -1,16 +1,36 @@
-# React + Vite
+# KidCoins - Tareas y Paga
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Aplicación web para gestionar tareas domésticas y recompensas de los hijos.
 
-Currently, two official plugins are available:
+## URLs
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Producción (Firebase Hosting):** https://tareashijos-77042.web.app
+- **Producción (Netlify):** https://tareashijos.netlify.app
+- **Repositorio:** https://github.com/ssvisionrafa/tareashijos
 
-## React Compiler
+## Funcionalidades
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Dashboard para niños con tareas diarias y semanales.
+- Dashboard para padres con aprobación de tareas y gestión de pagos.
+- Sincronización en tiempo real entre dispositivos mediante Firebase Firestore.
+- Generación de tareas con IA (requiere clave de Gemini).
+- Diseño responsive para móvil, tablet y escritorio.
 
-## Expanding the Oxlint configuration
+## Desarrollo local
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+```bash
+npm install
+npm run dev
+```
+
+## Variables de entorno
+
+Copia `.env.example` a `.env.local` y rellena con los valores de tu proyecto Firebase:
+
+```bash
+cp .env.example .env.local
+```
+
+## Despliegue
+
+El despliegue se realiza automáticamente mediante GitHub Actions a Firebase Hosting cada vez que se hace `push` a la rama `main`.
