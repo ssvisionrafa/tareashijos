@@ -925,9 +925,9 @@ export default function App() {
           </div>
           <button 
             onClick={() => setShowAddTaskModal(true)}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 transition"
+            className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 transition min-h-[44px]"
           >
-            <Plus className="w-4 h-4" /> Añadir Tarea Manual
+            <Plus className="w-4 h-4" /> Añadir Tarea
           </button>
         </div>
 
@@ -943,9 +943,9 @@ export default function App() {
               </div>
               <button 
                 onClick={() => { setShowPayoutModal(kid); setPayoutAmount((kid.balance || 0).toFixed(2)); }}
-                className="px-3 py-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-bold rounded-xl shadow-xs transition"
+                className="px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-bold rounded-xl shadow-sm transition min-h-[44px]"
               >
-                Pagar / Dar Paga
+                Pagar
               </button>
             </div>
           ))}
@@ -956,9 +956,9 @@ export default function App() {
 
   const renderChildDashboard = () => (
     <div className="space-y-6">
-      <div className="flex items-center justify-between bg-white p-3 rounded-2xl shadow-xs border border-slate-100">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-3 rounded-2xl shadow-sm border border-slate-100 gap-2">
         <span className="text-xs font-bold text-slate-400 uppercase tracking-wider px-2">Seleccionar Perfil:</span>
-        <div className="flex items-center space-x-2">
+        <div className="flex flex-wrap items-center gap-2">
           {kids.map(kid => (
             <button
               key={kid.id}
@@ -986,7 +986,7 @@ export default function App() {
             <div className="relative z-10 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <span className="text-4xl p-2 bg-white/10 rounded-2xl backdrop-blur-xs">{currentKid.avatar}</span>
+                  <span className="text-4xl p-2 bg-white/10 rounded-2xl backdrop-blur-sm">{currentKid.avatar}</span>
                   <div>
                     <h1 className="text-2xl font-black tracking-tight">¡Hola, {currentKid.name}! 👋</h1>
                     <p className="text-indigo-200 text-xs font-semibold">Objetivo semanal: 10,00 € completando tus tareas</p>
@@ -1051,7 +1051,7 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="bg-black/20 backdrop-blur-xs rounded-2xl p-4 space-y-2">
+              <div className="bg-black/20 backdrop-blur-sm rounded-2xl p-4 space-y-2">
                 <div className="flex items-center justify-between text-xs font-bold">
                   <span className="flex items-center gap-1.5 text-indigo-200">
                     <Gift className="w-4 h-4 text-teal-300" /> Objetivo Semanal: 10.00 €
@@ -1079,33 +1079,36 @@ export default function App() {
                 <p className="text-xs text-slate-400 mt-0.5">Revisa tus tareas o añade una foto comprobante con la IA.</p>
               </div>
 
-              <div className="flex items-center bg-slate-100 p-1 rounded-xl self-start sm:self-auto">
+              <div className="flex flex-wrap items-center gap-2 bg-slate-100 p-1 rounded-xl self-start sm:self-auto">
                 <button
                   onClick={() => setViewMode('day')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1 transition ${
-                    viewMode === 'day' ? 'bg-white text-slate-800 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+                  className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center space-x-1 transition min-h-[40px] ${
+                    viewMode === 'day' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'
                   }`}
                 >
                   <ListFilter className="w-3.5 h-3.5" />
-                  <span>Día a día</span>
+                  <span className="hidden sm:inline">Día a día</span>
+                  <span className="sm:hidden">Día</span>
                 </button>
                 <button
                   onClick={() => setViewMode('weekly')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1 transition ${
-                    viewMode === 'weekly' ? 'bg-white text-slate-800 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+                  className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center space-x-1 transition min-h-[40px] ${
+                    viewMode === 'weekly' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'
                   }`}
                 >
                   <LayoutGrid className="w-3.5 h-3.5" />
-                  <span>Semana completa</span>
+                  <span className="hidden sm:inline">Semana</span>
+                  <span className="sm:hidden">Sem.</span>
                 </button>
                 <button
                   onClick={() => setViewMode('completed')}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1 transition ${
-                    viewMode === 'completed' ? 'bg-white text-slate-800 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+                  className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center space-x-1 transition min-h-[40px] ${
+                    viewMode === 'completed' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-800'
                   }`}
                 >
                   <CheckCircle className="w-3.5 h-3.5" />
-                  <span>Completadas</span>
+                  <span className="hidden sm:inline">Completadas</span>
+                  <span className="sm:hidden">Hechas</span>
                 </button>
               </div>
 
@@ -1114,7 +1117,7 @@ export default function App() {
                   setNewTask({ ...newTask, assignedTo: activeKidId, day: selectedDay });
                   setShowAddTaskModal(true);
                 }}
-                className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl flex items-center space-x-1.5 transition self-start sm:self-auto shrink-0"
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl flex items-center space-x-1.5 transition self-start sm:self-auto shrink-0 min-h-[44px]"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Añadir Tarea</span>
@@ -1123,31 +1126,34 @@ export default function App() {
 
             {viewMode === 'day' && (
               <>
-                <div className="flex space-x-1.5 overflow-x-auto pb-2 scrollbar-none">
-                  {DAYS.map(day => {
-                    const dayTasks = tasks.filter(t => t.assignedTo === activeKidId && t.day === day);
-                    const doneCount = dayTasks.filter(t => t.status === 'approved' || t.status === 'completed').length;
-                    const totalCount = dayTasks.length;
+                <div className="relative">
+                  <div className="flex space-x-1.5 overflow-x-auto pb-3 pt-1 px-1 -mx-1 scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
+                    {DAYS.map(day => {
+                      const dayTasks = tasks.filter(t => t.assignedTo === activeKidId && t.day === day);
+                      const doneCount = dayTasks.filter(t => t.status === 'approved' || t.status === 'completed').length;
+                      const totalCount = dayTasks.length;
 
-                    return (
-                      <button
-                        key={day}
-                        onClick={() => setSelectedDay(day)}
-                        className={`flex-1 min-w-[90px] py-2.5 px-3 rounded-2xl text-xs font-bold transition flex flex-col items-center justify-center space-y-1 ${
-                          selectedDay === day 
-                            ? 'bg-indigo-600 text-white shadow-sm scale-102' 
-                            : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
-                        }`}
-                      >
-                        <span>{day}</span>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full ${
-                          selectedDay === day ? 'bg-indigo-700 text-indigo-100' : 'bg-slate-200 text-slate-600'
-                        }`}>
-                          {doneCount}/{totalCount}
-                        </span>
-                      </button>
-                    );
-                  })}
+                      return (
+                        <button
+                          key={day}
+                          onClick={() => setSelectedDay(day)}
+                          className={`flex-shrink-0 min-w-[76px] sm:min-w-[90px] py-3 px-3 rounded-2xl text-xs font-bold transition flex flex-col items-center justify-center space-y-1 min-h-[60px] ${
+                            selectedDay === day 
+                              ? 'bg-indigo-600 text-white shadow-sm scale-[1.02]' 
+                              : 'bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200'
+                          }`}
+                        >
+                          <span>{day.substring(0, 3)}</span>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-full ${
+                            selectedDay === day ? 'bg-indigo-700 text-indigo-100' : 'bg-slate-200 text-slate-600'
+                          }`}>
+                            {doneCount}/{totalCount}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="pointer-events-none absolute right-0 top-0 bottom-3 w-8 bg-gradient-to-l from-white to-transparent sm:hidden"></div>
                 </div>
 
                 <div className="pt-2 space-y-3">
@@ -1178,7 +1184,7 @@ export default function App() {
                                 ? 'bg-sky-50/70 border-sky-200' 
                                 : task.isExtra 
                                 ? 'bg-indigo-50/70 border-indigo-200 hover:border-indigo-300' 
-                                : 'bg-white border-slate-200 hover:border-indigo-300 shadow-xs'
+                                : 'bg-white border-slate-200 hover:border-indigo-300 shadow-sm'
                             }`}
                           >
                             <div className="flex items-start justify-between">
@@ -1227,7 +1233,7 @@ export default function App() {
                                 <>
                                   <button
                                     onClick={() => handleMarkTaskCompleted(task.id)}
-                                    className={`flex-1 py-2.5 font-black text-xs uppercase tracking-wider rounded-xl shadow-xs flex items-center justify-center gap-2 transition active:scale-95 ${
+                                    className={`flex-1 py-3 font-black text-xs uppercase tracking-wider rounded-xl shadow-sm flex items-center justify-center gap-2 transition active:scale-95 min-h-[48px] ${
                                       task.isExtra 
                                         ? 'bg-indigo-600 hover:bg-indigo-700 text-white' 
                                         : 'bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white'
@@ -1236,7 +1242,7 @@ export default function App() {
                                     <Zap className="w-4 h-4 fill-current" /> Hecho
                                   </button>
 
-                                  <label className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl cursor-pointer transition flex items-center justify-center" title="Subir foto comprobante con IA">
+                                  <label className="p-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl cursor-pointer transition flex items-center justify-center min-h-[48px] min-w-[48px]" title="Subir foto comprobante con IA">
                                     {inspectingTaskId === task.id && aiInspectingTask ? (
                                       <Loader2 className="w-4 h-4 animate-spin text-indigo-600" />
                                     ) : (
@@ -1255,7 +1261,7 @@ export default function App() {
 
                               <button
                                 onClick={() => handleSpeakCheer(task.id, `¡Muy bien ${currentKid.name}! ¡Sigue así completando la tarea ${task.title} para ganar tu recompensa!`)}
-                                className="p-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl transition flex items-center justify-center"
+                                className="p-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl transition flex items-center justify-center min-h-[48px] min-w-[48px]"
                                 title="Escuchar voz de ánimo IA"
                                 disabled={speakingTaskId === task.id}
                               >
@@ -1281,7 +1287,58 @@ export default function App() {
                   <span><strong>Desglose semanal completo:</strong> Tareas diarias obligatorias agrupadas primero y Entrenamiento Gimnasio al final como extra.</span>
                 </div>
 
-                <div className="overflow-x-auto rounded-2xl border border-slate-200">
+                {/* Vista móvil: tarjetas */}
+                <div className="md:hidden space-y-3">
+                  {[...DAILY_TASK_TEMPLATES]
+                    .sort((a, b) => (a.isExtra ? 1 : 0) - (b.isExtra ? 1 : 0))
+                    .map((tmpl) => (
+                      <div key={tmpl.templateId} className={`p-4 rounded-2xl border ${tmpl.isExtra ? 'bg-indigo-50/70 border-indigo-200' : 'bg-white border-slate-200'}`}>
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center space-x-2 font-semibold text-slate-800">
+                            <span className="text-lg">{tmpl.icon}</span>
+                            <span>{tmpl.title}</span>
+                            {tmpl.isExtra && <span className="text-[10px] bg-indigo-200 text-indigo-800 px-1.5 py-0.5 rounded font-bold">EXTRA</span>}
+                          </div>
+                          <span className="font-bold text-emerald-600">{tmpl.reward.toFixed(2)}€</span>
+                        </div>
+                        <div className="grid grid-cols-7 gap-1">
+                          {DAYS.map(day => {
+                            const task = tasks.find(t => t.assignedTo === activeKidId && t.day === day && (t.title.includes(tmpl.title.substring(0, 10)) || t.id.includes(tmpl.templateId)));
+                            const isApproved = task?.status === 'approved';
+                            const isDone = task?.status === 'completed';
+
+                            return (
+                              <div key={day} className="flex flex-col items-center gap-1">
+                                <span className="text-[10px] font-bold text-slate-500">{day.substring(0, 3)}</span>
+                                {task ? (
+                                  <button
+                                    onClick={() => {
+                                      if (task.status === 'pending') handleMarkTaskCompleted(task.id);
+                                    }}
+                                    className={`w-10 h-10 rounded-xl font-bold flex items-center justify-center transition ${
+                                      isApproved 
+                                        ? 'bg-emerald-500 text-white' 
+                                        : isDone 
+                                        ? 'bg-sky-400 text-white animate-pulse' 
+                                        : 'bg-slate-100 text-slate-400 hover:bg-indigo-200 hover:text-indigo-900'
+                                    }`}
+                                    title={`${day}: ${task.title} - ${isApproved ? 'Aprobada' : isDone ? 'En revisión' : 'Hacer clic para marcar'}`}
+                                  >
+                                    {isApproved ? <Check className="w-5 h-5" /> : isDone ? <Clock className="w-5 h-5" /> : <Circle className="w-4 h-4 text-slate-300" />}
+                                  </button>
+                                ) : (
+                                  <span className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-300">-</span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+
+                {/* Vista desktop: tabla */}
+                <div className="hidden md:block overflow-x-auto rounded-2xl border border-slate-200">
                   <table className="w-full text-left text-xs">
                     <thead className="bg-slate-100 text-slate-700 font-bold">
                       <tr>
@@ -1319,7 +1376,7 @@ export default function App() {
                                       onClick={() => {
                                         if (task.status === 'pending') handleMarkTaskCompleted(task.id);
                                       }}
-                                      className={`w-8 h-8 rounded-xl font-bold flex items-center justify-center mx-auto transition ${
+                                      className={`w-10 h-10 rounded-xl font-bold flex items-center justify-center mx-auto transition ${
                                         isApproved 
                                           ? 'bg-emerald-500 text-white' 
                                           : isDone 
@@ -1328,7 +1385,7 @@ export default function App() {
                                       }`}
                                       title={`${day}: ${task.title} - ${isApproved ? 'Aprobada' : isDone ? 'En revisión' : 'Hacer clic para marcar'}`}
                                     >
-                                      {isApproved ? <Check className="w-4 h-4" /> : isDone ? <Clock className="w-4 h-4" /> : <Circle className="w-3.5 h-3.5 text-slate-300" />}
+                                      {isApproved ? <Check className="w-5 h-5" /> : isDone ? <Clock className="w-5 h-5" /> : <Circle className="w-4 h-4 text-slate-300" />}
                                     </button>
                                   ) : (
                                     <span className="text-slate-300">-</span>
@@ -1352,29 +1409,29 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-12">
       {notification && (
-        <div className={`fixed bottom-5 right-5 z-50 px-4 py-3 rounded-2xl shadow-xl text-xs font-bold flex items-center space-x-2 transition ${
+        <div className={`fixed bottom-5 left-4 right-4 sm:left-auto sm:right-5 z-50 px-4 py-3 rounded-2xl shadow-xl text-xs font-bold flex items-center space-x-2 transition max-w-sm ${
           notification.type === 'error' ? 'bg-rose-600 text-white' : notification.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-white'
         }`}>
-          <span>{notification.msg}</span>
+          <span className="break-words">{notification.msg}</span>
         </div>
       )}
 
       <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
-        <div className="max-w-5xl mx-auto px-4 py-3.5 flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-indigo-600 text-white rounded-2xl flex items-center justify-center font-black text-xl shadow-sm">
+        <div className="max-w-5xl mx-auto px-4 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center space-x-3 shrink-0">
+            <div className="w-10 h-10 bg-indigo-600 text-white rounded-2xl flex items-center justify-center font-black text-xl shadow-sm shrink-0">
               💶
             </div>
-            <div>
-              <h1 className="font-extrabold text-base text-slate-800 leading-none">KidCoins • Enma y Matías</h1>
-              <p className="text-xs text-slate-400 font-medium mt-0.5">Gestor Inteligente de Paga e IA</p>
+            <div className="min-w-0">
+              <h1 className="font-extrabold text-base text-slate-800 leading-tight truncate">KidCoins</h1>
+              <p className="text-xs text-slate-400 font-medium mt-0.5">Enma y Matías</p>
             </div>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               onClick={() => setShowFamilyModal(true)}
-              className="px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs rounded-xl flex items-center space-x-1.5 transition border border-indigo-200"
+              className="px-2.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs rounded-xl flex items-center space-x-1.5 transition border border-indigo-200 min-h-[40px]"
               title="Sincronizar entre varios teléfonos/dispositivos"
             >
               <Users className="w-3.5 h-3.5" />
@@ -1385,18 +1442,19 @@ export default function App() {
             <div className="bg-slate-100 p-1 rounded-xl flex items-center space-x-1">
               <button
                 onClick={() => toggleRole('child')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition ${
-                  role === 'child' ? 'bg-white text-slate-800 shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition min-h-[40px] ${
+                  role === 'child' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
                 <User className="w-3.5 h-3.5 text-indigo-600" />
-                <span>Modo Niños</span>
+                <span className="hidden sm:inline">Modo Niños</span>
+                <span className="sm:hidden">Niños</span>
               </button>
 
               <button
                 onClick={() => toggleRole('parent')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition ${
-                  role === 'parent' ? 'bg-indigo-600 text-white shadow-xs' : 'text-slate-500 hover:text-slate-700'
+                className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition min-h-[40px] ${
+                  role === 'parent' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
                 <Shield className="w-3.5 h-3.5" />
@@ -1413,8 +1471,8 @@ export default function App() {
       </main>
 
       {showFamilyModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 max-h-[90vh] overflow-y-auto max-w-md w-full shadow-2xl space-y-5">
             <div className="flex justify-between items-center border-b pb-3">
               <div className="flex items-center space-x-2 text-indigo-600 font-extrabold text-base">
                 <Users className="w-5 h-5" />
@@ -1485,8 +1543,8 @@ export default function App() {
       )}
 
       {showPinModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-xs w-full shadow-2xl space-y-4 text-center">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 max-h-[90vh] overflow-y-auto max-w-xs w-full shadow-2xl space-y-4 text-center">
             <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto">
               <Lock className="w-6 h-6" />
             </div>
@@ -1526,8 +1584,8 @@ export default function App() {
       )}
 
       {showAddTaskModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 max-h-[90vh] overflow-y-auto max-w-md w-full shadow-2xl space-y-4">
             <div className="flex justify-between items-center border-b pb-3">
               <h3 className="font-extrabold text-slate-800 text-base">Crear Nueva Tarea Manual</h3>
               <button onClick={() => setShowAddTaskModal(false)} className="text-slate-400 hover:text-slate-600">
@@ -1602,8 +1660,8 @@ export default function App() {
       )}
 
       {showPayoutModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-xs w-full shadow-2xl space-y-4 text-center">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 max-h-[90vh] overflow-y-auto max-w-xs w-full shadow-2xl space-y-4 text-center">
             <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto text-2xl">
               💵
             </div>
@@ -1641,8 +1699,8 @@ export default function App() {
       )}
 
       {showAiGenModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 max-h-[90vh] overflow-y-auto max-w-lg w-full shadow-2xl space-y-4">
             <div className="flex justify-between items-center border-b pb-3">
               <div className="flex items-center space-x-2 text-indigo-600 font-extrabold text-base">
                 <BrainCircuit className="w-5 h-5" />
@@ -1710,8 +1768,8 @@ export default function App() {
       )}
 
       {showGoalModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 max-h-[90vh] overflow-y-auto max-w-md w-full shadow-2xl space-y-4">
             <div className="flex justify-between items-center border-b pb-3">
               <div className="flex items-center space-x-2 text-teal-600 font-extrabold text-base">
                 <ImageIcon className="w-5 h-5" />
