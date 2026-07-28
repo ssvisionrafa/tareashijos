@@ -33,4 +33,4 @@ cp .env.example .env.local
 
 ## Despliegue
 
-El despliegue se realiza automáticamente mediante GitHub Actions a Firebase Hosting cada vez que se hace `push` a la rama `main`.
+El despliegue se realiza automáticamente mediante GitHub Actions a Firebase Hosting cada vez que se hace `push` a la rama `main`. El build se ejecuta en los servidores de GitHub usando las variables de entorno configuradas.
