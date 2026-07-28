@@ -18,6 +18,9 @@ dist-ssr
 # Firebase service account keys (NEVER commit these)
 *tareashijos-77042*-firebase-adminsdk*.json
 
+# Firebase local cache
+.firebase/
+
 # Windows reserved filename artifact
 nul
 
