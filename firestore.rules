@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Permite lectura/escritura anónima para familias de tareas y recompensas.
+    // NOTA: En producción real considera autenticación real.
+    match /artifacts/{appId}/families/{familyId}/{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
