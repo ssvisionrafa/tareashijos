@@ -221,6 +221,7 @@ export default function App() {
   }, [familyId]);
 
   useEffect(() => {
+    console.log(`[KidCoins] Family: ${familyId}, AppId: ${appId}`);
     setLoading(true);
     setSyncStatus('connecting');
 
@@ -244,87 +245,72 @@ export default function App() {
       setLoading(false);
     };
 
-    const setupFirestore = async () => {
-      try {
-        await enableNetwork(db);
-      } catch (e) {
-        console.warn('Could not enable Firestore network:', e);
+    // Load local data immediately while Firestore connects
+    loadLocalData();
+
+    enableNetwork(db).catch((e) => console.warn('Could not enable Firestore network:', e));
+
+    const kidsRef = collection(db, 'artifacts', appId, 'families', familyId, 'kids');
+    const unsubKids = onSnapshot(kidsRef,
+      (snapshot) => {
+        const fetchedKids = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const fromServer = !snapshot.metadata.fromCache;
+
+        if (fetchedKids.length === 0 && fromServer) {
+          DEFAULT_KIDS.forEach(k => setDoc(doc(kidsRef, k.id), k).catch((e) => console.warn('setDoc kid failed:', e)));
+          setKids(DEFAULT_KIDS);
+          localStorage.setItem(`kid_reward_kids_${familyId}`, JSON.stringify(DEFAULT_KIDS));
+        } else if (fetchedKids.length > 0) {
+          setKids(fetchedKids);
+          localStorage.setItem(`kid_reward_kids_${familyId}`, JSON.stringify(fetchedKids));
+          if (!activeKidId || !fetchedKids.find(k => k.id === activeKidId)) {
+            setActiveKidId(fetchedKids[0]?.id || 'kid_enma');
+          }
+        }
+
+        if (fromServer) {
+          setSyncStatus(prev => prev === 'offline' ? 'synced' : 'synced');
+        }
+      },
+      (err) => {
+        console.warn("Firestore permission issue for kids, loading local storage:", err.message);
+        setSyncStatus('offline');
       }
+    );
 
-      const kidsRef = collection(db, 'artifacts', appId, 'families', familyId, 'kids');
-      const unsubKids = onSnapshot(kidsRef, 
-        (snapshot) => {
-          const fetchedKids = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          if (fetchedKids.length === 0 && snapshot.metadata.fromCache === false) {
-            DEFAULT_KIDS.forEach(k => setDoc(doc(kidsRef, k.id), k).catch((e) => console.warn('setDoc kid failed:', e)));
-            setKids(DEFAULT_KIDS);
-            localStorage.setItem(`kid_reward_kids_${familyId}`, JSON.stringify(DEFAULT_KIDS));
-          } else if (fetchedKids.length > 0) {
-            setKids(fetchedKids);
-            localStorage.setItem(`kid_reward_kids_${familyId}`, JSON.stringify(fetchedKids));
-            if (!activeKidId || !fetchedKids.find(k => k.id === activeKidId)) {
-              setActiveKidId(fetchedKids[0]?.id || 'kid_enma');
-            }
-          }
-        },
-        (err) => {
-          console.warn("Firestore permission issue for kids, loading local storage:", err.message);
-          setSyncStatus('offline');
-          loadLocalData();
+    const tasksRef = collection(db, 'artifacts', appId, 'families', familyId, 'tasks');
+    const unsubTasks = onSnapshot(tasksRef,
+      (snapshot) => {
+        const fetchedTasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const fromServer = !snapshot.metadata.fromCache;
+
+        if (fetchedTasks.length > 0) {
+          setTasks(fetchedTasks);
+          localStorage.setItem(`kid_reward_tasks_${familyId}`, JSON.stringify(fetchedTasks));
+          tasksInitialLoadDoneRef.current = true;
+        } else if (fromServer) {
+          const initialTasks = generateInitialTasks();
+          initialTasks.forEach(t => setDoc(doc(tasksRef, t.id), t).catch((e) => console.warn('setDoc task failed:', e)));
+          setTasks(initialTasks);
+          localStorage.setItem(`kid_reward_tasks_${familyId}`, JSON.stringify(initialTasks));
+          tasksInitialLoadDoneRef.current = true;
         }
-      );
 
-      const tasksRef = collection(db, 'artifacts', appId, 'families', familyId, 'tasks');
-      const unsubTasks = onSnapshot(tasksRef,
-        (snapshot) => {
-          const fetchedTasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          const isServerOrPending = !snapshot.metadata.fromCache || snapshot.metadata.hasPendingWrites;
-
-          if (!tasksInitialLoadDoneRef.current) {
-            if (fetchedTasks.length > 0) {
-              setTasks(fetchedTasks);
-              localStorage.setItem(`kid_reward_tasks_${familyId}`, JSON.stringify(fetchedTasks));
-              tasksInitialLoadDoneRef.current = true;
-              setSyncStatus('synced');
-            } else if (isServerOrPending) {
-              const initialTasks = generateInitialTasks();
-              initialTasks.forEach(t => setDoc(doc(tasksRef, t.id), t).catch((e) => console.warn('setDoc task failed:', e)));
-              setTasks(initialTasks);
-              localStorage.setItem(`kid_reward_tasks_${familyId}`, JSON.stringify(initialTasks));
-              tasksInitialLoadDoneRef.current = true;
-              setSyncStatus('synced');
-            }
-          } else if (isServerOrPending && fetchedTasks.length > 0) {
-            setTasks(fetchedTasks);
-            localStorage.setItem(`kid_reward_tasks_${familyId}`, JSON.stringify(fetchedTasks));
-            setSyncStatus('synced');
-          }
-        },
-        (err) => {
-          console.warn("Firestore permission issue for tasks, loading local storage:", err.message);
-          setSyncStatus('offline');
-          const savedTasks = localStorage.getItem(`kid_reward_tasks_${familyId}`);
-          if (savedTasks) {
-            try { setTasks(JSON.parse(savedTasks)); } catch { setTasks(generateInitialTasks()); }
-          } else {
-            const initialTasks = generateInitialTasks();
-            setTasks(initialTasks);
-            localStorage.setItem(`kid_reward_tasks_${familyId}`, JSON.stringify(initialTasks));
-          }
+        if (fromServer) {
+          setSyncStatus('synced');
         }
-      );
+      },
+      (err) => {
+        console.warn("Firestore permission issue for tasks, loading local storage:", err.message);
+        setSyncStatus('offline');
+      }
+    );
 
-      setLoading(false);
+    setLoading(false);
 
-      return () => {
-        unsubKids();
-        unsubTasks();
-      };
-    };
-
-    const cleanupPromise = setupFirestore();
     return () => {
-      cleanupPromise.then(cleanup => cleanup && cleanup());
+      unsubKids();
+      unsubTasks();
     };
   }, [familyId, activeKidId]);
 
