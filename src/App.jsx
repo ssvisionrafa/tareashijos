@@ -1,11 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { initializeApp } from 'firebase/app';
-import { 
-  getAuth, 
-  signInAnonymously, 
-  signInWithCustomToken, 
-  onAuthStateChanged 
-} from 'firebase/auth';
+
 import { 
   getFirestore, 
   doc, 
@@ -14,7 +9,8 @@ import {
   collection, 
   onSnapshot,
   increment,
-  writeBatch
+  writeBatch,
+  enableNetwork
 } from 'firebase/firestore';
 import { 
   CheckCircle, 
@@ -79,7 +75,6 @@ const buildFirebaseConfig = () => {
 const firebaseConfig = buildFirebaseConfig();
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 const db = getFirestore(app);
 const appId = typeof __app_id !== 'undefined' ? __app_id : (import.meta.env.VITE_FIREBASE_APP_ID || 'kid-reward-manager-app');
 
@@ -151,12 +146,11 @@ function pcm16ToWavBlob(pcmData, sampleRate = 24000) {
 }
 
 export default function App() {
-  const [user, setUser] = useState(null);
   const [role, setRole] = useState('child');
   const [activeKidId, setActiveKidId] = useState('kid_enma');
   const [selectedDay, setSelectedDay] = useState('Lunes');
   const [viewMode, setViewMode] = useState('day');
-  
+
   const [familyId, setFamilyId] = useState(() => {
     const saved = localStorage.getItem('kid_reward_family_id');
     if (saved) return saved;
@@ -177,6 +171,7 @@ export default function App() {
   const [showAiGenModal, setShowAiGenModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
   const [notification, setNotification] = useState(null);
+  const [syncStatus, setSyncStatus] = useState('connecting');
 
   const [aiGeneratingTasks, setAiGeneratingTasks] = useState(false);
   const [aiThemePrompt, setAiThemePrompt] = useState('Hábitos de Orden y Lectura');
@@ -203,26 +198,6 @@ export default function App() {
   };
 
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
-      } catch (err) {
-        console.error("Auth initialization error:", err);
-        setUser({ uid: 'local-user', isAnonymous: true });
-      }
-    };
-    initAuth();
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
-      if (u) setUser(u);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
     const savedKids = localStorage.getItem(`kid_reward_kids_${familyId}`);
     if (savedKids) {
       try { setKids(JSON.parse(savedKids)); } catch { setKids(DEFAULT_KIDS); }
@@ -246,8 +221,8 @@ export default function App() {
   }, [familyId]);
 
   useEffect(() => {
-    if (!user) return;
     setLoading(true);
+    setSyncStatus('connecting');
 
     const loadLocalData = () => {
       const savedKids = localStorage.getItem(`kid_reward_kids_${familyId}`);
@@ -269,69 +244,89 @@ export default function App() {
       setLoading(false);
     };
 
-    const kidsRef = collection(db, 'artifacts', appId, 'families', familyId, 'kids');
-    const unsubKids = onSnapshot(kidsRef, 
-      (snapshot) => {
-        const fetchedKids = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        if (fetchedKids.length === 0 && snapshot.metadata.fromCache === false) {
-          DEFAULT_KIDS.forEach(k => setDoc(doc(kidsRef, k.id), k).catch(() => {}));
-          setKids(DEFAULT_KIDS);
-          localStorage.setItem(`kid_reward_kids_${familyId}`, JSON.stringify(DEFAULT_KIDS));
-        } else if (fetchedKids.length > 0) {
-          setKids(fetchedKids);
-          localStorage.setItem(`kid_reward_kids_${familyId}`, JSON.stringify(fetchedKids));
-          if (!activeKidId || !fetchedKids.find(k => k.id === activeKidId)) {
-            setActiveKidId(fetchedKids[0]?.id || 'kid_enma');
-          }
-        }
-      },
-      (err) => {
-        console.warn("Firestore permission issue for kids, loading local storage:", err.message);
-        loadLocalData();
+    const setupFirestore = async () => {
+      try {
+        await enableNetwork(db);
+      } catch (e) {
+        console.warn('Could not enable Firestore network:', e);
       }
-    );
 
-    const tasksRef = collection(db, 'artifacts', appId, 'families', familyId, 'tasks');
-    const unsubTasks = onSnapshot(tasksRef,
-      (snapshot) => {
-        const fetchedTasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        const isServerOrPending = !snapshot.metadata.fromCache || snapshot.metadata.hasPendingWrites;
+      const kidsRef = collection(db, 'artifacts', appId, 'families', familyId, 'kids');
+      const unsubKids = onSnapshot(kidsRef, 
+        (snapshot) => {
+          const fetchedKids = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          if (fetchedKids.length === 0 && snapshot.metadata.fromCache === false) {
+            DEFAULT_KIDS.forEach(k => setDoc(doc(kidsRef, k.id), k).catch((e) => console.warn('setDoc kid failed:', e)));
+            setKids(DEFAULT_KIDS);
+            localStorage.setItem(`kid_reward_kids_${familyId}`, JSON.stringify(DEFAULT_KIDS));
+          } else if (fetchedKids.length > 0) {
+            setKids(fetchedKids);
+            localStorage.setItem(`kid_reward_kids_${familyId}`, JSON.stringify(fetchedKids));
+            if (!activeKidId || !fetchedKids.find(k => k.id === activeKidId)) {
+              setActiveKidId(fetchedKids[0]?.id || 'kid_enma');
+            }
+          }
+        },
+        (err) => {
+          console.warn("Firestore permission issue for kids, loading local storage:", err.message);
+          setSyncStatus('offline');
+          loadLocalData();
+        }
+      );
 
-        if (!tasksInitialLoadDoneRef.current) {
-          if (fetchedTasks.length > 0) {
+      const tasksRef = collection(db, 'artifacts', appId, 'families', familyId, 'tasks');
+      const unsubTasks = onSnapshot(tasksRef,
+        (snapshot) => {
+          const fetchedTasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          const isServerOrPending = !snapshot.metadata.fromCache || snapshot.metadata.hasPendingWrites;
+
+          if (!tasksInitialLoadDoneRef.current) {
+            if (fetchedTasks.length > 0) {
+              setTasks(fetchedTasks);
+              localStorage.setItem(`kid_reward_tasks_${familyId}`, JSON.stringify(fetchedTasks));
+              tasksInitialLoadDoneRef.current = true;
+              setSyncStatus('synced');
+            } else if (isServerOrPending) {
+              const initialTasks = generateInitialTasks();
+              initialTasks.forEach(t => setDoc(doc(tasksRef, t.id), t).catch((e) => console.warn('setDoc task failed:', e)));
+              setTasks(initialTasks);
+              localStorage.setItem(`kid_reward_tasks_${familyId}`, JSON.stringify(initialTasks));
+              tasksInitialLoadDoneRef.current = true;
+              setSyncStatus('synced');
+            }
+          } else if (isServerOrPending && fetchedTasks.length > 0) {
             setTasks(fetchedTasks);
             localStorage.setItem(`kid_reward_tasks_${familyId}`, JSON.stringify(fetchedTasks));
-            tasksInitialLoadDoneRef.current = true;
-          } else if (isServerOrPending) {
+            setSyncStatus('synced');
+          }
+        },
+        (err) => {
+          console.warn("Firestore permission issue for tasks, loading local storage:", err.message);
+          setSyncStatus('offline');
+          const savedTasks = localStorage.getItem(`kid_reward_tasks_${familyId}`);
+          if (savedTasks) {
+            try { setTasks(JSON.parse(savedTasks)); } catch { setTasks(generateInitialTasks()); }
+          } else {
             const initialTasks = generateInitialTasks();
-            initialTasks.forEach(t => setDoc(doc(tasksRef, t.id), t).catch(() => {}));
             setTasks(initialTasks);
             localStorage.setItem(`kid_reward_tasks_${familyId}`, JSON.stringify(initialTasks));
-            tasksInitialLoadDoneRef.current = true;
           }
-        } else if (isServerOrPending && fetchedTasks.length > 0) {
-          setTasks(fetchedTasks);
-          localStorage.setItem(`kid_reward_tasks_${familyId}`, JSON.stringify(fetchedTasks));
         }
-      },
-      (err) => {
-        console.warn("Firestore permission issue for tasks, loading local storage:", err.message);
-        const savedTasks = localStorage.getItem(`kid_reward_tasks_${familyId}`);
-        if (savedTasks) {
-          try { setTasks(JSON.parse(savedTasks)); } catch { setTasks(generateInitialTasks()); }
-        } else {
-          const initialTasks = generateInitialTasks();
-          setTasks(initialTasks);
-          localStorage.setItem(`kid_reward_tasks_${familyId}`, JSON.stringify(initialTasks));
-        }
-      }
-    );
+      );
 
-    return () => {
-      unsubKids();
-      unsubTasks();
+      setLoading(false);
+
+      return () => {
+        unsubKids();
+        unsubTasks();
+      };
     };
-  }, [user, familyId, activeKidId]);
+
+    const cleanupPromise = setupFirestore();
+    return () => {
+      cleanupPromise.then(cleanup => cleanup && cleanup());
+    };
+  }, [familyId, activeKidId]);
 
   const persistKids = (updatedKids) => {
     setKids(updatedKids);
@@ -1437,6 +1432,9 @@ export default function App() {
               <Users className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Familia:</span>
               <span className="font-mono bg-indigo-200 text-indigo-900 px-1.5 py-0.5 rounded text-[11px]">{familyId}</span>
+              {syncStatus === 'synced' && <span className="w-2 h-2 rounded-full bg-emerald-500" title="Sincronizado con la nube"></span>}
+              {syncStatus === 'offline' && <span className="w-2 h-2 rounded-full bg-rose-500" title="Sin conexión con la nube"></span>}
+              {syncStatus === 'connecting' && <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" title="Conectando..."></span>}
             </button>
 
             <div className="bg-slate-100 p-1 rounded-xl flex items-center space-x-1">
