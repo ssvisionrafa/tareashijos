@@ -46,37 +46,18 @@ import {
   Wifi
 } from 'lucide-react';
 
-const buildFirebaseConfig = () => {
-  const env = import.meta.env;
-  const hasViteConfig = env.VITE_FIREBASE_API_KEY && env.VITE_FIREBASE_PROJECT_ID;
-  if (hasViteConfig) {
-    return {
-      apiKey: env.VITE_FIREBASE_API_KEY,
-      authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
-      projectId: env.VITE_FIREBASE_PROJECT_ID,
-      storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET,
-      messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-      appId: env.VITE_FIREBASE_APP_ID
-    };
-  }
-  if (typeof __firebase_config !== 'undefined') {
-    return JSON.parse(__firebase_config);
-  }
-  return {
-    apiKey: "demo-api-key",
-    authDomain: "demo-app.firebaseapp.com",
-    projectId: "demo-app",
-    storageBucket: "demo-app.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "1:123456789:web:demo"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyAMnUHvpRcnI_X_R5j0HZf4KhGox39a-mg",
+  authDomain: "tareashijos-77042.firebaseapp.com",
+  projectId: "tareashijos-77042",
+  storageBucket: "tareashijos-77042.firebasestorage.app",
+  messagingSenderId: "844564314852",
+  appId: "1:844564314852:web:8a25d1486732c9bacdcaf1"
 };
-
-const firebaseConfig = buildFirebaseConfig();
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : (import.meta.env.VITE_FIREBASE_APP_ID || 'kid-reward-manager-app');
+const appId = "1:844564314852:web:8a25d1486732c9bacdcaf1";
 
 const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
