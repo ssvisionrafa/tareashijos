@@ -250,13 +250,14 @@ export default function App() {
 
     enableNetwork(db).catch((e) => console.warn('Could not enable Firestore network:', e));
 
-    const kidsRef = collection(db, 'artifacts', appId, 'families', familyId, 'kids');
-    const unsubKids = onSnapshot(kidsRef,
-      (snapshot) => {
-        const fetchedKids = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        const fromServer = !snapshot.metadata.fromCache;
+      const kidsRef = collection(db, 'artifacts', appId, 'families', familyId, 'kids');
+      const unsubKids = onSnapshot(kidsRef,
+        (snapshot) => {
+          const fetchedKids = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          const fromServer = !snapshot.metadata.fromCache;
+          console.log(`[KidCoins] Kids snapshot: ${fetchedKids.length} docs, fromServer=${fromServer}`);
 
-        if (fetchedKids.length === 0 && fromServer) {
+          if (fetchedKids.length === 0 && fromServer) {
           DEFAULT_KIDS.forEach(k => setDoc(doc(kidsRef, k.id), k).catch((e) => console.warn('setDoc kid failed:', e)));
           setKids(DEFAULT_KIDS);
           localStorage.setItem(`kid_reward_kids_${familyId}`, JSON.stringify(DEFAULT_KIDS));
@@ -278,13 +279,14 @@ export default function App() {
       }
     );
 
-    const tasksRef = collection(db, 'artifacts', appId, 'families', familyId, 'tasks');
-    const unsubTasks = onSnapshot(tasksRef,
-      (snapshot) => {
-        const fetchedTasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        const fromServer = !snapshot.metadata.fromCache;
+      const tasksRef = collection(db, 'artifacts', appId, 'families', familyId, 'tasks');
+      const unsubTasks = onSnapshot(tasksRef,
+        (snapshot) => {
+          const fetchedTasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          const fromServer = !snapshot.metadata.fromCache;
+          console.log(`[KidCoins] Tasks snapshot: ${fetchedTasks.length} docs, fromServer=${fromServer}`);
 
-        if (fetchedTasks.length > 0) {
+          if (fetchedTasks.length > 0) {
           setTasks(fetchedTasks);
           localStorage.setItem(`kid_reward_tasks_${familyId}`, JSON.stringify(fetchedTasks));
           tasksInitialLoadDoneRef.current = true;
@@ -1418,9 +1420,9 @@ export default function App() {
               <Users className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Familia:</span>
               <span className="font-mono bg-indigo-200 text-indigo-900 px-1.5 py-0.5 rounded text-[11px]">{familyId}</span>
-              {syncStatus === 'synced' && <span className="w-2 h-2 rounded-full bg-emerald-500" title="Sincronizado con la nube"></span>}
-              {syncStatus === 'offline' && <span className="w-2 h-2 rounded-full bg-rose-500" title="Sin conexión con la nube"></span>}
-              {syncStatus === 'connecting' && <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" title="Conectando..."></span>}
+              {syncStatus === 'synced' && <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 ml-1" title="Sincronizado con la nube"></span>}
+              {syncStatus === 'offline' && <span className="inline-block w-2.5 h-2.5 rounded-full bg-rose-500 ml-1" title="Sin conexión con la nube"></span>}
+              {syncStatus === 'connecting' && <span className="inline-block w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse ml-1" title="Conectando..."></span>}
             </button>
 
             <div className="bg-slate-100 p-1 rounded-xl flex items-center space-x-1">
