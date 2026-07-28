@@ -15,6 +15,9 @@ dist-ssr
 # Netlify local state
 .netlify/state.json
 
+# Firebase service account keys (NEVER commit these)
+*tareashijos-77042*-firebase-adminsdk*.json
+
 # Windows reserved filename artifact
 nul
 
