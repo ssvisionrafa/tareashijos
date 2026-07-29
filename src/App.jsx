@@ -264,7 +264,7 @@ export default function App() {
     return saved ? saved === 'true' : false;
   });
 
-  const [newTask, setNewTask] = useState({ title: '', description: '', reward: '1.00', assignedTo: 'kid_enma', day: 'Lunes', category: 'General', icon: '⭐', isExtra: false, requiresPhoto: false, timerMinutes: 0, recurrence: 'weekly' });
+  const [newTask, setNewTask] = useState({ title: '', description: '', reward: '1.00', assignedTo: 'kid_enma', days: ['Lunes'], category: 'General', icon: '⭐', isExtra: false, requiresPhoto: false, timerMinutes: 0, recurrence: 'weekly' });
   const [editingTask, setEditingTask] = useState(null);
   const [payoutAmount, setPayoutAmount] = useState('');
   const [editingWeeklyGoal, setEditingWeeklyGoal] = useState(false);
@@ -1125,7 +1125,7 @@ export default function App() {
 
   const resetNewTaskForm = () => {
     setEditingTask(null);
-    setNewTask({ title: '', description: '', reward: '1.00', assignedTo: activeKidId || 'kid_enma', day: selectedDay, category: 'General', icon: '⭐', isExtra: false, requiresPhoto: false, timerMinutes: 0, recurrence: 'weekly' });
+    setNewTask({ title: '', description: '', reward: '1.00', assignedTo: activeKidId || 'kid_enma', days: [selectedDay], category: 'General', icon: '⭐', isExtra: false, requiresPhoto: false, timerMinutes: 0, recurrence: 'weekly' });
   };
 
   const openAddTaskModal = (taskToEdit = null) => {
@@ -1136,7 +1136,7 @@ export default function App() {
         description: taskToEdit.description || '',
         reward: String(taskToEdit.reward || '1.00'),
         assignedTo: taskToEdit.assignedTo || activeKidId,
-        day: taskToEdit.day || selectedDay,
+        days: taskToEdit.day ? [taskToEdit.day] : [selectedDay],
         category: taskToEdit.category || 'General',
         icon: taskToEdit.icon || '⭐',
         isExtra: !!taskToEdit.isExtra,
@@ -1146,7 +1146,7 @@ export default function App() {
       });
     } else {
       resetNewTaskForm();
-      setNewTask(prev => ({ ...prev, assignedTo: activeKidId || 'kid_enma', day: selectedDay }));
+      setNewTask(prev => ({ ...prev, assignedTo: activeKidId || 'kid_enma', days: [selectedDay] }));
     }
     setShowAddTaskModal(true);
   };
@@ -1160,7 +1160,6 @@ export default function App() {
       description: newTask.description.trim(),
       reward: parseFloat(newTask.reward) || 0.50,
       assignedTo: newTask.assignedTo,
-      day: newTask.day,
       status: 'pending',
       category: newTask.category,
       icon: newTask.icon || getCategoryIcon(newTask.category),
@@ -1172,17 +1171,31 @@ export default function App() {
     };
 
     try {
-      let updatedTasks;
-      let updatedTask;
+      let updatedTasks = [...tasks];
+      let tasksToSave = [];
+      const selectedDays = newTask.days && newTask.days.length > 0 ? newTask.days : [selectedDay];
+
       if (editingTask) {
-        updatedTask = { ...editingTask, ...taskData };
-        updatedTasks = tasks.map(t => t.id === editingTask.id ? updatedTask : t);
+        const firstDay = selectedDays[0];
+        const updatedTask = { ...editingTask, ...taskData, day: firstDay };
+        updatedTasks = updatedTasks.map(t => t.id === editingTask.id ? updatedTask : t);
+        tasksToSave.push(updatedTask);
+        
+        for (let i = 1; i < selectedDays.length; i++) {
+          const taskId = `custom_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
+          const additionalTask = { id: taskId, ...taskData, day: selectedDays[i], aiFeedback: null, photoUrl: null, createdAt: new Date().toISOString() };
+          updatedTasks.push(additionalTask);
+          tasksToSave.push(additionalTask);
+        }
         notify('✏️ Tarea actualizada.', 'success');
       } else {
-        const taskId = `custom_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
-        updatedTask = { id: taskId, ...taskData, aiFeedback: null, photoUrl: null, createdAt: new Date().toISOString() };
-        updatedTasks = [...tasks, updatedTask];
-        notify('⭐ Nueva tarea añadida al horario.', 'success');
+        for (const d of selectedDays) {
+          const taskId = `custom_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
+          const createdTask = { id: taskId, ...taskData, day: d, aiFeedback: null, photoUrl: null, createdAt: new Date().toISOString() };
+          updatedTasks.push(createdTask);
+          tasksToSave.push(createdTask);
+        }
+        notify('⭐ Nuevas tareas añadidas al horario.', 'success');
       }
 
       persistTasks(updatedTasks);
@@ -1190,12 +1203,12 @@ export default function App() {
       resetNewTaskForm();
 
       try {
-        const taskRef = doc(db, 'artifacts', appId, 'families', familyId, 'tasks', updatedTask.id);
-        if (editingTask) {
-          await updateDoc(taskRef, taskData);
-        } else {
-          await setDoc(taskRef, updatedTask);
-        }
+        const batch = writeBatch(db);
+        tasksToSave.forEach(taskObj => {
+          const taskRef = doc(db, 'artifacts', appId, 'families', familyId, 'tasks', taskObj.id);
+          batch.set(taskRef, taskObj, { merge: true });
+        });
+        await batch.commit();
       } catch (err) {
         console.warn('Firestore task save skipped (using local storage fallback)', err);
         notify('No se pudo sincronizar la tarea con la nube. Se guardó en este dispositivo.', 'error');
@@ -2405,21 +2418,33 @@ export default function App() {
               <div>
                 <label className="font-bold text-slate-700 block mb-1">Día de la semana:</label>
                 <div className="flex flex-wrap gap-2">
-                  {DAYS.map(d => (
-                    <button
-                      key={d}
-                      type="button"
-                      onClick={() => setNewTask({ ...newTask, day: d })}
-                      className={`px-3 py-2 rounded-xl text-xs font-bold border transition min-h-[40px] ${
-                        newTask.day === d
-                          ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
-                          : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-                      }`}
-                      title={d}
-                    >
-                      {d.substring(0, 3)}
-                    </button>
-                  ))}
+                  {DAYS.map(d => {
+                    const isSelected = newTask.days?.includes(d);
+                    return (
+                      <button
+                        key={d}
+                        type="button"
+                        onClick={() => {
+                          const currentDays = newTask.days || [];
+                          if (currentDays.includes(d)) {
+                            if (currentDays.length > 1) {
+                              setNewTask({ ...newTask, days: currentDays.filter(day => day !== d) });
+                            }
+                          } else {
+                            setNewTask({ ...newTask, days: [...currentDays, d] });
+                          }
+                        }}
+                        className={`px-3 py-2 rounded-xl text-xs font-bold border transition min-h-[40px] ${
+                          isSelected
+                            ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                            : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                        }`}
+                        title={d}
+                      >
+                        {d.substring(0, 3)}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
               <div>
