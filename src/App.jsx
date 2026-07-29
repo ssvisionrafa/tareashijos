@@ -319,24 +319,7 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    const savedKids = localStorage.getItem(`kid_reward_kids_${familyId}`);
-    if (savedKids) {
-      try { setKids(JSON.parse(savedKids)); } catch { setKids(DEFAULT_KIDS); }
-    } else {
-      setKids(DEFAULT_KIDS);
-      localStorage.setItem(`kid_reward_kids_${familyId}`, JSON.stringify(DEFAULT_KIDS));
-    }
-    const savedTasks = localStorage.getItem(`kid_reward_tasks_${familyId}`);
-    if (savedTasks) {
-      try { setTasks(JSON.parse(savedTasks)); } catch { setTasks(generateInitialTasks()); }
-    } else {
-      const initialTasks = generateInitialTasks();
-      setTasks(initialTasks);
-      localStorage.setItem(`kid_reward_tasks_${familyId}`, JSON.stringify(initialTasks));
-    }
-    setLoading(false);
-  }, [familyId]);
+
 
   useEffect(() => {
     tasksInitialLoadDoneRef.current = false;
@@ -436,10 +419,31 @@ export default function App() {
           const fromServer = !snapshot.metadata.fromCache;
 
           if (fetchedTasks.length > 0) {
-          setTasks(fetchedTasks);
-          localStorage.setItem(`kid_reward_tasks_${familyId}`, JSON.stringify(fetchedTasks));
+          // Merge: keep local tasks that are not yet in Firestore
+          const firestoreIds = new Set(fetchedTasks.map(t => t.id));
+          const savedLocal = localStorage.getItem(`kid_reward_tasks_${familyId}`);
+          let localOnly = [];
+          if (savedLocal) {
+            try {
+              const localTasks = JSON.parse(savedLocal);
+              localOnly = localTasks.filter(t => !firestoreIds.has(t.id) && t.id.startsWith('custom_'));
+            } catch { /* ignore parse errors */ }
+          }
+          const merged = [...fetchedTasks, ...localOnly];
+          setTasks(merged);
+          localStorage.setItem(`kid_reward_tasks_${familyId}`, JSON.stringify(merged));
           tasksInitialLoadDoneRef.current = true;
           tasksSeedDoneRef.current = true;
+
+          // Re-sync local-only tasks to Firestore
+          if (localOnly.length > 0) {
+            const reSyncBatch = writeBatch(db);
+            localOnly.forEach(t => {
+              const taskRef = doc(tasksRef, t.id);
+              reSyncBatch.set(taskRef, t);
+            });
+            reSyncBatch.commit().catch(e => console.warn('Re-sync local tasks failed:', e));
+          }
         } else if (fromServer && !tasksSeedDoneRef.current) {
           const onboardingSeen = localStorage.getItem('kid_reward_onboarding_seen') === 'true';
           tasksSeedDoneRef.current = true;
