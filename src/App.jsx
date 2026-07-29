@@ -17,25 +17,18 @@ import {
   Circle, 
   Clock, 
   Plus, 
-  Shield, 
-  User,
   Sparkles, 
   PiggyBank, 
   Gift, 
   RefreshCw, 
-  Lock, 
   Check, 
   X,
   Coins,
   Calendar,
-  Dumbbell,
-  Zap,
   CheckCheck,
   Flame,
   LayoutGrid,
   ListFilter,
-  Camera,
-  Volume2,
   Wand2,
   Image as ImageIcon,
   Loader2,
@@ -45,6 +38,16 @@ import {
   Smartphone,
   Wifi
 } from 'lucide-react';
+
+import Notification from './components/Notification';
+import Header from './components/Header';
+import TaskCard from './components/TaskCard';
+import PinModal from './components/PinModal';
+import PayoutModal from './components/PayoutModal';
+import RewardStoreModal from './components/RewardStoreModal';
+import ManageRewardsModal from './components/ManageRewardsModal';
+import PenaltyModal from './components/PenaltyModal';
+import OnboardingModal from './components/OnboardingModal';
 
 const firebaseConfig = {
   apiKey: "AIzaSyAMnUHvpRcnI_X_R5j0HZf4KhGox39a-mg",
@@ -61,39 +64,126 @@ const appId = "1:844564314852:web:8a25d1486732c9bacdcaf1";
 
 const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
-const DEFAULT_KIDS = [
-  { id: 'kid_enma', name: 'Enma', avatar: '👧', balance: 0.00, goalName: 'Set de Magia y Manualidades', goalAmount: 15.00, goalImage: null },
-  { id: 'kid_matias', name: 'Matías', avatar: '👦', balance: 0.00, goalName: 'Pista de Carreras', goalAmount: 15.00, goalImage: null }
+const KID_COLORS = [
+  { id: 'indigo', label: 'Índigo', bg: 'bg-indigo-500', text: 'text-indigo-600', light: 'bg-indigo-50', border: 'border-indigo-200' },
+  { id: 'rose', label: 'Rosa', bg: 'bg-rose-500', text: 'text-rose-600', light: 'bg-rose-50', border: 'border-rose-200' },
+  { id: 'emerald', label: 'Esmeralda', bg: 'bg-emerald-500', text: 'text-emerald-600', light: 'bg-emerald-50', border: 'border-emerald-200' },
+  { id: 'amber', label: 'Ámbar', bg: 'bg-amber-500', text: 'text-amber-600', light: 'bg-amber-50', border: 'border-amber-200' },
+  { id: 'sky', label: 'Cielo', bg: 'bg-sky-500', text: 'text-sky-600', light: 'bg-sky-50', border: 'border-sky-200' },
+  { id: 'violet', label: 'Violeta', bg: 'bg-violet-500', text: 'text-violet-600', light: 'bg-violet-50', border: 'border-rose-200' },
+  { id: 'orange', label: 'Naranja', bg: 'bg-orange-500', text: 'text-orange-600', light: 'bg-orange-50', border: 'border-orange-200' },
+  { id: 'teal', label: 'Verde azulado', bg: 'bg-teal-500', text: 'text-teal-600', light: 'bg-teal-50', border: 'border-teal-200' }
 ];
 
-const DAILY_TASK_TEMPLATES = [
-  { templateId: 'cama', title: 'Hacer la cama y ordenar habitación', reward: 0.50, category: 'Dormitorio', icon: '🛏️' },
-  { templateId: 'ropa', title: 'Organizar ropa y zapatos', reward: 0.30, category: 'Dormitorio', icon: '👟' },
-  { templateId: 'escoba', title: 'Pasar la escoba en la habitación', reward: 0.20, category: 'Dormitorio', icon: '🧹' },
-  { templateId: 'mesa', title: 'Poner/quitar la mesa y fregar platos', reward: 0.43, category: 'Cocina', icon: '🍽️' },
-  { templateId: 'gym', title: 'Entrenamiento Gimnasio (>30 min)', reward: 1.00, category: 'Extra', icon: '🏋️‍♂️', isExtra: true }
+const AVATAR_OPTIONS = ['👧', '👦', '👶', '👩', '👨', '🧒', '🧑', '🦄', '🐶', '🐱', '🦁', '🐯', '🐼', '🐨', '🦊', '🐰', '🐹', '🐭', '🐻', '🐸', '🐙', '🦖', '🚀', '⭐', '🌈', '🎸', '🎨', '⚽', '🏀', '🎮', '📚', '🔬', '🎭', '🎪'];
+
+const CATEGORIES = [
+  { id: 'Dormitorio', label: 'Dormitorio', icon: '🛏️', color: 'bg-violet-100 text-violet-700 border-violet-200' },
+  { id: 'Cocina', label: 'Cocina', icon: '🍽️', color: 'bg-orange-100 text-orange-700 border-orange-200' },
+  { id: 'Baño', label: 'Baño', icon: '🚿', color: 'bg-sky-100 text-sky-700 border-sky-200' },
+  { id: 'Salón', label: 'Salón', icon: '🛋️', color: 'bg-emerald-100 text-emerald-700 border-emerald-200' },
+  { id: 'Jardín', label: 'Jardín', icon: '🌳', color: 'bg-green-100 text-green-700 border-green-200' },
+  { id: 'Mascotas', label: 'Mascotas', icon: '🐾', color: 'bg-amber-100 text-amber-700 border-amber-200' },
+  { id: 'Estudio', label: 'Estudio', icon: '📚', color: 'bg-indigo-100 text-indigo-700 border-indigo-200' },
+  { id: 'Deporte', label: 'Deporte', icon: '⚽', color: 'bg-rose-100 text-rose-700 border-rose-200' },
+  { id: 'Extra', label: 'Extra / Bono', icon: '🔥', color: 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200' },
+  { id: 'General', label: 'General', icon: '⭐', color: 'bg-slate-100 text-slate-700 border-slate-200' }
 ];
+
+const REWARD_ICONS = ['🎁', '🧸', '🎮', '📚', '🍦', '🍕', '🎬', '⚽', '🎨', '🎸', '🏖️', '💎', '⭐', '🚀', '🦄'];
+
+const REWARD_CATEGORIES = [
+  { id: 'toys', label: 'Juguetes', icon: '🧸' },
+  { id: 'games', label: 'Videojuegos', icon: '🎮' },
+  { id: 'books', label: 'Libros', icon: '📚' },
+  { id: 'treats', label: 'Golosinas', icon: '🍦' },
+  { id: 'experiences', label: 'Experiencias', icon: '🏖️' },
+  { id: 'money', label: 'Dinero', icon: '💎' },
+  { id: 'other', label: 'Otros', icon: '⭐' }
+];
+
+const RECURRENCE_OPTIONS = [
+  { id: 'weekly', label: 'Semanal', desc: 'Se repite cada semana en el día asignado' },
+  { id: 'daily', label: 'Diaria', desc: 'Disponible todos los días' },
+  { id: 'once', label: 'Una sola vez', desc: 'No se repite tras completarse' }
+];
+
+const TASK_TEMPLATES = [
+  { title: 'Hacer la cama y ordenar habitación', reward: 0.50, category: 'Dormitorio', icon: '🛏️', description: ' tender la cama, recoger juguetes y dejar la habitación ordenada.' },
+  { title: 'Organizar ropa y zapatos', reward: 0.30, category: 'Dormitorio', icon: '👟', description: 'Guardar la ropa limpia y los zapatos en su lugar.' },
+  { title: 'Pasar la escoba en la habitación', reward: 0.20, category: 'Dormitorio', icon: '🧹', description: 'Barrer el suelo de la habitación retirando polvo y pelusas.' },
+  { title: 'Poner/quitar la mesa y fregar platos', reward: 0.43, category: 'Cocina', icon: '🍽️', description: 'Ayudar a poner la mesa y lavar los platos después de comer.' },
+  { title: 'Entrenamiento Gimnasio (>30 min)', reward: 1.00, category: 'Deporte', icon: '🏋️‍♂️', description: 'Hacer ejercicio físico durante al menos 30 minutos.', isExtra: true, timerMinutes: 30 },
+  { title: 'Leer 20 minutos', reward: 0.40, category: 'Estudio', icon: '📖', description: 'Leer un libro durante 20 minutos en voz alta o en silencio.', timerMinutes: 20 },
+  { title: 'Recoger el jardín', reward: 0.50, category: 'Jardín', icon: '🍂', description: 'Recoger hojas, juguetes y dejar el jardín ordenado.' },
+  { title: 'Pasear / alimentar a la mascota', reward: 0.35, category: 'Mascotas', icon: '🐕', description: 'Dar de comer o pasear a la mascota según corresponda.' },
+  { title: 'Recoger la mesa del salón', reward: 0.25, category: 'Salón', icon: '🧺', description: 'Recoger juguetes y objetos del salón y dejarlo ordenado.' },
+  { title: 'Lavar los dientes correctamente', reward: 0.20, category: 'Baño', icon: '🪥', description: 'Cepillarse los dientes al menos 2 minutos.', timerMinutes: 2 }
+];
+
+const sanitizeDocId = (str) => {
+  return str
+    .normalize('NFKC')
+    .replace(/[/\\.]/g, '_')
+    .replace(/^__/, '_')
+    .replace(/^\.$/g, '_')
+    .replace(/^\.{2,}$/g, '_')
+    .slice(0, 100);
+};
+
+const createDefaultKid = (name = 'Niño', index = 1) => ({
+  id: `kid_${Date.now()}_${index}`,
+  name,
+  avatar: index === 1 ? '👧' : '👦',
+  color: KID_COLORS[(index - 1) % KID_COLORS.length].id,
+  age: 8,
+  balance: 0,
+  goalName: '',
+  goalAmount: 15,
+  weeklyGoal: 10,
+  goalImage: null,
+  photoUrl: null,
+  createdAt: new Date().toISOString()
+});
+
+const DEFAULT_KIDS = [
+  { id: 'kid_enma', name: 'Enma', avatar: '👧', color: 'rose', age: 8, balance: 0, goalName: 'Set de Magia y Manualidades', goalAmount: 15, weeklyGoal: 10, goalImage: null, photoUrl: null, createdAt: new Date().toISOString() },
+  { id: 'kid_matias', name: 'Matías', avatar: '👦', color: 'indigo', age: 6, balance: 0, goalName: 'Pista de Carreras', goalAmount: 15, weeklyGoal: 10, goalImage: null, photoUrl: null, createdAt: new Date().toISOString() }
+];
+
+const generateInitialTasksForKid = (kid, templates = TASK_TEMPLATES) => {
+  const tasks = [];
+  DAYS.forEach(day => {
+    templates.forEach(tmpl => {
+      const titleSlug = sanitizeDocId(tmpl.title.slice(0, 12).replace(/\s+/g, '_').toLowerCase());
+      tasks.push({
+        id: `task_${kid.id}_${day}_${titleSlug}`,
+        title: tmpl.title,
+        description: tmpl.description || '',
+        reward: tmpl.reward,
+        assignedTo: kid.id,
+        day: day,
+        status: 'pending',
+        category: tmpl.category,
+        icon: tmpl.icon,
+        isExtra: !!tmpl.isExtra,
+        requiresPhoto: !!tmpl.requiresPhoto,
+        timerMinutes: tmpl.timerMinutes || 0,
+        recurrence: tmpl.isExtra ? 'daily' : 'weekly',
+        aiFeedback: null,
+        photoUrl: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+    });
+  });
+  return tasks;
+};
 
 const generateInitialTasks = () => {
   const tasks = [];
   DEFAULT_KIDS.forEach(kid => {
-    DAYS.forEach(day => {
-      DAILY_TASK_TEMPLATES.forEach(tmpl => {
-        tasks.push({
-          id: `task_${kid.id}_${day}_${tmpl.templateId}`,
-          title: tmpl.title,
-          reward: tmpl.reward,
-          assignedTo: kid.id,
-          day: day,
-          status: 'pending',
-          category: tmpl.category,
-          icon: tmpl.icon,
-          isExtra: !!tmpl.isExtra,
-          aiFeedback: null,
-          photoUrl: null
-        });
-      });
-    });
+    tasks.push(...generateInitialTasksForKid(kid));
   });
   return tasks;
 };
@@ -151,8 +241,8 @@ export default function App() {
   const [showPayoutModal, setShowPayoutModal] = useState(null);
   const [showAiGenModal, setShowAiGenModal] = useState(false);
   const [showGoalModal, setShowGoalModal] = useState(false);
-  const [notification, setNotification] = useState(null);
-  const [syncStatus, setSyncStatus] = useState('connecting');
+  const [showManageKidsModal, setShowManageKidsModal] = useState(false);
+  const [editingKid, setEditingKid] = useState(null);
 
   const [aiGeneratingTasks, setAiGeneratingTasks] = useState(false);
   const [aiThemePrompt, setAiThemePrompt] = useState('Hábitos de Orden y Lectura');
@@ -167,16 +257,67 @@ export default function App() {
   const [kids, setKids] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [, setLoading] = useState(true);
+  const [notification, setNotification] = useState(null);
+  const [syncStatus, setSyncStatus] = useState('connecting');
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('kid_reward_dark_mode');
+    return saved ? saved === 'true' : false;
+  });
 
-  const [newTask, setNewTask] = useState({ title: '', reward: '1.00', assignedTo: 'kid_enma', day: 'Lunes', category: 'General', icon: '⭐' });
+  const [newTask, setNewTask] = useState({ title: '', description: '', reward: '1.00', assignedTo: 'kid_enma', day: 'Lunes', category: 'General', icon: '⭐', isExtra: false, requiresPhoto: false, timerMinutes: 0, recurrence: 'weekly' });
+  const [editingTask, setEditingTask] = useState(null);
   const [payoutAmount, setPayoutAmount] = useState('');
+  const [editingWeeklyGoal, setEditingWeeklyGoal] = useState(false);
+  const [weeklyGoalInput, setWeeklyGoalInput] = useState('10');
+
+  const [rewards, setRewards] = useState([]);
+  const [purchases, setPurchases] = useState([]);
+  const [showRewardStoreModal, setShowRewardStoreModal] = useState(false);
+  const [showManageRewardsModal, setShowManageRewardsModal] = useState(false);
+  const [editingReward, setEditingReward] = useState(null);
+  const [newReward, setNewReward] = useState({ name: '', description: '', price: '5.00', icon: '🎁', category: 'toys', stock: '' });
+  const [showPenaltyModal, setShowPenaltyModal] = useState(null);
+  const [penaltyAmount, setPenaltyAmount] = useState('');
+  const [penaltyReason, setPenaltyReason] = useState('');
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const tasksInitialLoadDoneRef = useRef(false);
+  const tasksSeedDoneRef = useRef(false);
+  const kidsSeedDoneRef = useRef(false);
 
   const notify = (msg, type = 'info') => {
     setNotification({ msg, type });
+    if ('Notification' in window && Notification.permission === 'granted') {
+      try {
+        new Notification('KidCoins', { body: msg, icon: '/favicon.svg' });
+      } catch (e) {
+        console.warn('Native notification failed', e);
+      }
+    }
     setTimeout(() => setNotification(null), 3800);
   };
+
+  const requestNotificationPermission = () => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted') {
+          notify('🔔 Notificaciones activadas', 'success');
+        }
+      });
+    }
+  };
+
+  useEffect(() => {
+    localStorage.setItem('kid_reward_dark_mode', darkMode);
+  }, [darkMode]);
+
+  useEffect(() => {
+    const onboardingSeen = localStorage.getItem('kid_reward_onboarding_seen');
+    if (!onboardingSeen && kids.length === 0 && tasks.length === 0) {
+      setShowOnboarding(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     const savedKids = localStorage.getItem(`kid_reward_kids_${familyId}`);
@@ -199,35 +340,54 @@ export default function App() {
 
   useEffect(() => {
     tasksInitialLoadDoneRef.current = false;
+    tasksSeedDoneRef.current = false;
+    kidsSeedDoneRef.current = false;
   }, [familyId]);
 
   useEffect(() => {
-    console.log(`[KidCoins] Family: ${familyId}, AppId: ${appId}`);
     setLoading(true);
     setSyncStatus('connecting');
 
     const loadLocalData = () => {
+      const onboardingSeen = localStorage.getItem('kid_reward_onboarding_seen') === 'true';
+
       const savedKids = localStorage.getItem(`kid_reward_kids_${familyId}`);
       if (savedKids) {
-        try { setKids(JSON.parse(savedKids)); } catch { setKids(DEFAULT_KIDS); }
-      } else {
+        try { setKids(JSON.parse(savedKids)); } catch { setKids(onboardingSeen ? DEFAULT_KIDS : []); }
+      } else if (onboardingSeen) {
         setKids(DEFAULT_KIDS);
         localStorage.setItem(`kid_reward_kids_${familyId}`, JSON.stringify(DEFAULT_KIDS));
+      } else {
+        setKids([]);
       }
 
       const savedTasks = localStorage.getItem(`kid_reward_tasks_${familyId}`);
       if (savedTasks) {
-        try { setTasks(JSON.parse(savedTasks)); } catch { setTasks(generateInitialTasks()); }
-      } else {
+        try { setTasks(JSON.parse(savedTasks)); } catch { setTasks(onboardingSeen ? generateInitialTasks() : []); }
+      } else if (onboardingSeen) {
         const initialTasks = generateInitialTasks();
         setTasks(initialTasks);
         localStorage.setItem(`kid_reward_tasks_${familyId}`, JSON.stringify(initialTasks));
+      } else {
+        setTasks([]);
+      }
+
+      const savedRewards = localStorage.getItem(`kid_reward_rewards_${familyId}`);
+      if (savedRewards) {
+        try { setRewards(JSON.parse(savedRewards)); } catch { setRewards([]); }
+      }
+
+      const savedPurchases = localStorage.getItem(`kid_reward_purchases_${familyId}`);
+      if (savedPurchases) {
+        try { setPurchases(JSON.parse(savedPurchases)); } catch { setPurchases([]); }
       }
       setLoading(false);
     };
 
     // Load local data immediately while Firestore connects
     loadLocalData();
+
+    requestNotificationPermission();
 
     enableNetwork(db).catch((e) => console.warn('Could not enable Firestore network:', e));
 
@@ -236,12 +396,23 @@ export default function App() {
         (snapshot) => {
           const fetchedKids = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           const fromServer = !snapshot.metadata.fromCache;
-          console.log(`[KidCoins] Kids snapshot: ${fetchedKids.length} docs, fromServer=${fromServer}`);
 
-          if (fetchedKids.length === 0 && fromServer) {
-          DEFAULT_KIDS.forEach(k => setDoc(doc(kidsRef, k.id), k).catch((e) => console.warn('setDoc kid failed:', e)));
-          setKids(DEFAULT_KIDS);
-          localStorage.setItem(`kid_reward_kids_${familyId}`, JSON.stringify(DEFAULT_KIDS));
+          const onboardingSeen = localStorage.getItem('kid_reward_onboarding_seen') === 'true';
+          if (fetchedKids.length === 0 && fromServer && !kidsSeedDoneRef.current && onboardingSeen) {
+          kidsSeedDoneRef.current = true;
+          const savedKids = localStorage.getItem(`kid_reward_kids_${familyId}`);
+          const kidsToUse = savedKids ? JSON.parse(savedKids) : DEFAULT_KIDS;
+          const batch = writeBatch(db);
+          kidsToUse.forEach(k => {
+            const kidRef = doc(kidsRef, k.id);
+            batch.set(kidRef, k);
+          });
+          batch.commit().catch((e) => console.warn('Initial kids batch write failed:', e));
+          setKids(kidsToUse);
+          localStorage.setItem(`kid_reward_kids_${familyId}`, JSON.stringify(kidsToUse));
+          if (!activeKidId || !kidsToUse.find(k => k.id === activeKidId)) {
+            setActiveKidId(kidsToUse[0]?.id || 'kid_enma');
+          }
         } else if (fetchedKids.length > 0) {
           setKids(fetchedKids);
           localStorage.setItem(`kid_reward_kids_${familyId}`, JSON.stringify(fetchedKids));
@@ -263,15 +434,32 @@ export default function App() {
         (snapshot) => {
           const fetchedTasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           const fromServer = !snapshot.metadata.fromCache;
-          console.log(`[KidCoins] Tasks snapshot: ${fetchedTasks.length} docs, fromServer=${fromServer}`);
 
           if (fetchedTasks.length > 0) {
           setTasks(fetchedTasks);
           localStorage.setItem(`kid_reward_tasks_${familyId}`, JSON.stringify(fetchedTasks));
           tasksInitialLoadDoneRef.current = true;
-        } else if (fromServer) {
-          const initialTasks = generateInitialTasks();
-          initialTasks.forEach(t => setDoc(doc(tasksRef, t.id), t).catch((e) => console.warn('setDoc task failed:', e)));
+          tasksSeedDoneRef.current = true;
+        } else if (fromServer && !tasksSeedDoneRef.current) {
+          const onboardingSeen = localStorage.getItem('kid_reward_onboarding_seen') === 'true';
+          tasksSeedDoneRef.current = true;
+          if (!onboardingSeen) return;
+          const savedTasks = localStorage.getItem(`kid_reward_tasks_${familyId}`);
+          let initialTasks;
+          if (savedTasks) {
+            initialTasks = JSON.parse(savedTasks);
+          } else {
+            const savedKids = localStorage.getItem(`kid_reward_kids_${familyId}`);
+            const kidsToUse = savedKids ? JSON.parse(savedKids) : DEFAULT_KIDS;
+            initialTasks = [];
+            kidsToUse.forEach(k => initialTasks.push(...generateInitialTasksForKid(k)));
+          }
+          const batch = writeBatch(db);
+          initialTasks.forEach(t => {
+            const taskRef = doc(tasksRef, t.id);
+            batch.set(taskRef, t);
+          });
+          batch.commit().catch((e) => console.warn('Initial tasks batch write failed:', e));
           setTasks(initialTasks);
           localStorage.setItem(`kid_reward_tasks_${familyId}`, JSON.stringify(initialTasks));
           tasksInitialLoadDoneRef.current = true;
@@ -287,11 +475,47 @@ export default function App() {
 
     setLoading(false);
 
+      const rewardsRef = collection(db, 'artifacts', appId, 'families', familyId, 'rewards');
+      const unsubRewards = onSnapshot(rewardsRef,
+        (snapshot) => {
+          const fetchedRewards = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          if (fetchedRewards.length > 0) {
+            setRewards(fetchedRewards);
+            localStorage.setItem(`kid_reward_rewards_${familyId}`, JSON.stringify(fetchedRewards));
+          }
+          setSyncStatus('synced');
+        },
+        (err) => {
+          console.warn("Firestore permission issue for rewards, loading local storage:", err.message);
+          setSyncStatus('offline');
+        }
+      );
+
+      const purchasesRef = collection(db, 'artifacts', appId, 'families', familyId, 'purchases');
+      const unsubPurchases = onSnapshot(purchasesRef,
+        (snapshot) => {
+          const fetchedPurchases = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          if (fetchedPurchases.length > 0) {
+            setPurchases(fetchedPurchases);
+            localStorage.setItem(`kid_reward_purchases_${familyId}`, JSON.stringify(fetchedPurchases));
+          }
+          setSyncStatus('synced');
+        },
+        (err) => {
+          console.warn("Firestore permission issue for purchases, loading local storage:", err.message);
+          setSyncStatus('offline');
+        }
+      );
+
     return () => {
       unsubKids();
       unsubTasks();
+      unsubRewards();
+      unsubPurchases();
     };
-  }, [familyId, activeKidId]);
+    // activeKidId is intentionally omitted to avoid re-subscribing on profile switches.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [familyId]);
 
   const persistKids = (updatedKids) => {
     setKids(updatedKids);
@@ -303,7 +527,27 @@ export default function App() {
     localStorage.setItem(`kid_reward_tasks_${familyId}`, JSON.stringify(updatedTasks));
   };
 
+  const persistRewards = (updatedRewards) => {
+    setRewards(updatedRewards);
+    localStorage.setItem(`kid_reward_rewards_${familyId}`, JSON.stringify(updatedRewards));
+  };
+
+  const persistPurchases = (updatedPurchases) => {
+    setPurchases(updatedPurchases);
+    localStorage.setItem(`kid_reward_purchases_${familyId}`, JSON.stringify(updatedPurchases));
+  };
+
   const currentKid = useMemo(() => kids.find(k => k.id === activeKidId) || kids[0], [kids, activeKidId]);
+
+  const getCategory = (categoryId) => CATEGORIES.find(c => c.id === categoryId) || CATEGORIES.find(c => c.id === 'General');
+  const getCategoryStyle = (categoryId) => {
+    const cat = getCategory(categoryId);
+    return cat ? cat.color : 'bg-slate-100 text-slate-700 border-slate-200';
+  };
+  const getCategoryIcon = (categoryId) => {
+    const cat = getCategory(categoryId);
+    return cat ? cat.icon : '⭐';
+  };
 
   const parentStats = useMemo(() => {
     const pendingApprovalCount = tasks.filter(t => t.status === 'completed').length;
@@ -324,15 +568,99 @@ export default function App() {
       .reduce((sum, t) => sum + Number(t.reward || 0), 0);
   }, [tasks, activeKidId]);
 
+  const kidStats = useMemo(() => {
+    const kidTasks = tasks.filter(t => t.assignedTo === activeKidId);
+    const approvedTasks = kidTasks.filter(t => t.status === 'approved');
+    const totalEarned = approvedTasks.reduce((sum, t) => sum + Number(t.reward || 0), 0);
+    const completedCount = approvedTasks.length;
+
+    const dayOrder = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    let streak = 0;
+    const reversedDays = [...dayOrder].reverse();
+    for (const day of reversedDays) {
+      const dayTasks = kidTasks.filter(t => t.day === day);
+      if (dayTasks.length === 0) continue;
+      const allDone = dayTasks.every(t => t.status === 'approved');
+      if (allDone) {
+        streak += 1;
+      } else {
+        break;
+      }
+    }
+
+    return { totalEarned, completedCount, streak };
+  }, [tasks, activeKidId]);
+
+  const familyHistory = useMemo(() => {
+    const history = [];
+    tasks.filter(t => t.status === 'approved').forEach(t => {
+      const kid = kids.find(k => k.id === t.assignedTo);
+      history.push({
+        id: `task_${t.id}`,
+        type: 'task',
+        title: `Tarea completada: ${t.title}`,
+        kidName: kid?.name || 'Desconocido',
+        amount: Number(t.reward || 0),
+        date: t.updatedAt || t.createdAt,
+        icon: t.icon || '⭐'
+      });
+    });
+    purchases.filter(p => p.status === 'approved').forEach(p => {
+      history.push({
+        id: `purchase_${p.id}`,
+        type: 'purchase',
+        title: `Compra aprobada: ${p.rewardName}`,
+        kidName: p.kidName,
+        amount: -Number(p.price || 0),
+        date: p.approvedAt || p.requestedAt,
+        icon: p.rewardIcon || '🎁'
+      });
+    });
+    return history.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 50);
+  }, [tasks, purchases, kids]);
+
   const handleJoinFamily = (e) => {
     e.preventDefault();
     const cleanId = inputFamilyId.trim().toUpperCase();
     if (!cleanId) return;
-    setFamilyId(cleanId);
     localStorage.setItem('kid_reward_family_id', cleanId);
+    localStorage.setItem('kid_reward_onboarding_seen', 'true');
+    setFamilyId(cleanId);
     setShowFamilyModal(false);
     setInputFamilyId('');
     notify(`👨‍👩‍👧‍👦 Sincronizado con la familia ${cleanId}`, 'success');
+  };
+
+  const handleOnboardingComplete = async (name, newKids) => {
+    localStorage.setItem('kid_reward_onboarding_seen', 'true');
+    kidsSeedDoneRef.current = true;
+    tasksSeedDoneRef.current = true;
+    setShowOnboarding(false);
+
+    if (newKids.length > 0) {
+      const initialTasks = [];
+      newKids.forEach(k => initialTasks.push(...generateInitialTasksForKid(k)));
+
+      persistKids(newKids);
+      persistTasks(initialTasks);
+      setActiveKidId(newKids[0].id);
+      notify('🎉 ¡Familia creada! Ahora añade tareas y recompensas.', 'success');
+
+      try {
+        const batch = writeBatch(db);
+        for (const k of newKids) {
+          const kidRef = doc(db, 'artifacts', appId, 'families', familyId, 'kids', k.id);
+          batch.set(kidRef, k);
+        }
+        for (const t of initialTasks) {
+          const taskRef = doc(db, 'artifacts', appId, 'families', familyId, 'tasks', t.id);
+          batch.set(taskRef, t);
+        }
+        await batch.commit();
+      } catch (err) {
+        console.warn('Firestore onboarding save failed', err);
+      }
+    }
   };
 
   const handleCopyFamilyCode = () => {
@@ -340,6 +668,112 @@ export default function App() {
     setCopiedSuccess(true);
     setTimeout(() => setCopiedSuccess(false), 2500);
     notify('📋 Código copiado al portapapeles', 'info');
+  };
+
+  const handleSaveKid = async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const name = form.name.value.trim();
+    const age = parseInt(form.age.value) || 6;
+    const weeklyGoal = Math.round((parseFloat(form.weeklyGoal.value) || 10) * 100) / 100;
+    const avatar = form.avatar.value;
+    const color = form.color.value;
+    if (!name) return;
+
+    let updatedKids;
+    if (editingKid) {
+      updatedKids = kids.map(k => k.id === editingKid.id ? { ...k, name, age, weeklyGoal, avatar, color, updatedAt: new Date().toISOString() } : k);
+    } else {
+      const newKid = createDefaultKid(name, kids.length + 1);
+      newKid.age = age;
+      newKid.weeklyGoal = weeklyGoal;
+      newKid.avatar = avatar;
+      newKid.color = color;
+      updatedKids = [...kids, newKid];
+    }
+    persistKids(updatedKids);
+
+    try {
+      const batch = writeBatch(db);
+      if (editingKid) {
+        const kidRef = doc(db, 'artifacts', appId, 'families', familyId, 'kids', editingKid.id);
+        batch.update(kidRef, { name, age, weeklyGoal, avatar, color, updatedAt: new Date().toISOString() });
+      } else {
+        const newKid = updatedKids[updatedKids.length - 1];
+        const kidRef = doc(db, 'artifacts', appId, 'families', familyId, 'kids', newKid.id);
+        batch.set(kidRef, newKid);
+        const generatedTasks = generateInitialTasksForKid(newKid);
+        generatedTasks.forEach(t => {
+          const taskRef = doc(db, 'artifacts', appId, 'families', familyId, 'tasks', t.id);
+          batch.set(taskRef, t);
+        });
+      }
+      await batch.commit();
+      notify(editingKid ? '👤 Perfil actualizado' : '👤 Hijo añadido', 'success');
+    } catch (err) {
+      console.warn('Firestore kid save failed', err);
+      notify('No se pudo sincronizar el cambio con la nube. Se guardó localmente.', 'error');
+    }
+
+    setEditingKid(null);
+    setShowManageKidsModal(false);
+  };
+
+  const handleDeleteKid = async (kidId) => {
+    if (!window.confirm('¿Eliminar este perfil? Se borrarán también sus tareas.')) return;
+    const updatedKids = kids.filter(k => k.id !== kidId);
+    const updatedTasks = tasks.filter(t => t.assignedTo !== kidId);
+    persistKids(updatedKids);
+    persistTasks(updatedTasks);
+    if (activeKidId === kidId) {
+      setActiveKidId(updatedKids[0]?.id || null);
+    }
+
+    try {
+      const batch = writeBatch(db);
+      const kidRef = doc(db, 'artifacts', appId, 'families', familyId, 'kids', kidId);
+      batch.delete(kidRef);
+      const tasksToDelete = tasks.filter(t => t.assignedTo === kidId);
+      tasksToDelete.forEach(t => {
+        const taskRef = doc(db, 'artifacts', appId, 'families', familyId, 'tasks', t.id);
+        batch.delete(taskRef);
+      });
+      await batch.commit();
+      notify('Perfil eliminado', 'info');
+    } catch (err) {
+      console.warn('Firestore kid delete failed', err);
+      notify('No se pudo sincronizar la eliminación con la nube. Se guardó localmente.', 'error');
+    }
+  };
+
+  const handleRegenerateFamilyCode = () => {
+    if (!window.confirm('¿Generar un nuevo código de familia? Los otros dispositivos deberán usar el nuevo código.')) return;
+    const newId = 'FAM-' + Math.floor(1000 + Math.random() * 9000);
+    setFamilyId(newId);
+    localStorage.setItem('kid_reward_family_id', newId);
+    notify(`Nuevo código de familia: ${newId}`, 'success');
+  };
+
+  const handleSaveWeeklyGoal = async () => {
+    if (!currentKid) return;
+    const value = parseFloat(weeklyGoalInput.replace(',', '.'));
+    if (isNaN(value) || value <= 0) {
+      notify('Introduce un objetivo semanal válido', 'error');
+      return;
+    }
+    const rounded = Math.round(value * 100) / 100;
+    const updatedKid = { ...currentKid, weeklyGoal: rounded, updatedAt: new Date().toISOString() };
+    const updatedKids = kids.map(k => k.id === currentKid.id ? updatedKid : k);
+    persistKids(updatedKids);
+    setEditingWeeklyGoal(false);
+    try {
+      const kidRef = doc(db, 'artifacts', appId, 'families', familyId, 'kids', currentKid.id);
+      await updateDoc(kidRef, { weeklyGoal: rounded, updatedAt: new Date().toISOString() });
+    } catch (err) {
+      console.warn('Firestore weekly goal update skipped', err);
+      notify('No se pudo sincronizar el objetivo con la nube. Se guardó en este dispositivo.', 'error');
+    }
+    notify('Objetivo semanal actualizado', 'success');
   };
 
   const handleSpeakCheer = async (taskId, textToSpeak) => {
@@ -461,7 +895,7 @@ export default function App() {
 
       const payload = {
         contents: [{
-          parts: [{ text: `Genera 4 tareas del hogar divertidas, educativas y bien pensadas para niños en español sobre la temática: "${aiThemePrompt}". Asigna días de la semana (Lunes a Domingo) y recompensas razonables en Euros entre 0.30€ y 1.50€.` }]
+          parts: [{ text: `Genera 4 tareas del hogar divertidas, educativas y bien pensadas para niños en español sobre la temática: "${aiThemePrompt}". Asigna días de la semana (Lunes a Domingo), recompensas razonables en Euros entre 0.30€ y 1.50€, una breve descripción de máximo 15 palabras, y si aplica un temporizador en minutos. Usa categorías reales como: Dormitorio, Cocina, Baño, Salón, Jardín, Mascotas, Estudio, Deporte, Extra.` }]
         }],
         generationConfig: {
           responseMimeType: "application/json",
@@ -471,12 +905,15 @@ export default function App() {
               type: "OBJECT",
               properties: {
                 title: { type: "STRING" },
+                description: { type: "STRING" },
                 reward: { type: "NUMBER" },
                 category: { type: "STRING" },
                 day: { type: "STRING" },
-                icon: { type: "STRING" }
+                icon: { type: "STRING" },
+                timerMinutes: { type: "INTEGER" },
+                isExtra: { type: "BOOLEAN" }
               },
-              propertyOrdering: ["title", "reward", "category", "day", "icon"]
+              propertyOrdering: ["title", "description", "reward", "category", "day", "icon", "timerMinutes", "isExtra"]
             }
           }
         }
@@ -511,13 +948,21 @@ export default function App() {
         const newTaskObj = {
           id: taskId,
           title: t.title,
+          description: t.description || '',
           reward: parseFloat(t.reward) || 0.50,
           assignedTo: kidId,
           day: t.day || 'Lunes',
           status: 'pending',
           category: t.category || 'IA Especial',
           icon: t.icon || '✨',
-          isExtra: true
+          isExtra: t.category === 'Extra' || !!t.isExtra,
+          requiresPhoto: false,
+          timerMinutes: parseInt(t.timerMinutes) || 0,
+          recurrence: 'weekly',
+          aiFeedback: null,
+          photoUrl: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         };
         try {
           await setDoc(doc(db, 'artifacts', appId, 'families', familyId, 'tasks', taskId), newTaskObj);
@@ -678,41 +1123,246 @@ export default function App() {
     }
   };
 
+  const resetNewTaskForm = () => {
+    setEditingTask(null);
+    setNewTask({ title: '', description: '', reward: '1.00', assignedTo: activeKidId || 'kid_enma', day: selectedDay, category: 'General', icon: '⭐', isExtra: false, requiresPhoto: false, timerMinutes: 0, recurrence: 'weekly' });
+  };
+
+  const openAddTaskModal = (taskToEdit = null) => {
+    if (taskToEdit) {
+      setEditingTask(taskToEdit);
+      setNewTask({
+        title: taskToEdit.title || '',
+        description: taskToEdit.description || '',
+        reward: String(taskToEdit.reward || '1.00'),
+        assignedTo: taskToEdit.assignedTo || activeKidId,
+        day: taskToEdit.day || selectedDay,
+        category: taskToEdit.category || 'General',
+        icon: taskToEdit.icon || '⭐',
+        isExtra: !!taskToEdit.isExtra,
+        requiresPhoto: !!taskToEdit.requiresPhoto,
+        timerMinutes: taskToEdit.timerMinutes || 0,
+        recurrence: taskToEdit.recurrence || 'weekly'
+      });
+    } else {
+      resetNewTaskForm();
+      setNewTask(prev => ({ ...prev, assignedTo: activeKidId || 'kid_enma', day: selectedDay }));
+    }
+    setShowAddTaskModal(true);
+  };
+
   const handleCreateTask = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     if (!newTask.title.trim()) return;
 
-    try {
-      const taskId = `custom_${Date.now()}`;
-      const newTaskObj = {
-        id: taskId,
-        title: newTask.title,
-        reward: parseFloat(newTask.reward) || 0.50,
-        assignedTo: newTask.assignedTo,
-        day: newTask.day,
-        status: 'pending',
-        category: newTask.category,
-        icon: newTask.icon || '⭐',
-        isExtra: newTask.category === 'Extra'
-      };
+    const taskData = {
+      title: newTask.title.trim(),
+      description: newTask.description.trim(),
+      reward: parseFloat(newTask.reward) || 0.50,
+      assignedTo: newTask.assignedTo,
+      day: newTask.day,
+      status: 'pending',
+      category: newTask.category,
+      icon: newTask.icon || getCategoryIcon(newTask.category),
+      isExtra: newTask.category === 'Extra' || newTask.isExtra,
+      requiresPhoto: !!newTask.requiresPhoto,
+      timerMinutes: parseInt(newTask.timerMinutes) || 0,
+      recurrence: newTask.recurrence || 'weekly',
+      updatedAt: new Date().toISOString()
+    };
 
-      try {
-        const taskRef = doc(db, 'artifacts', appId, 'families', familyId, 'tasks', taskId);
-        await setDoc(taskRef, newTaskObj);
-      } catch (err) {
-        console.warn('Firestore setDoc skipped (using local storage fallback)', err);
-        notify('No se pudo sincronizar la nueva tarea con la nube. Se guardó en este dispositivo.', 'error');
+    try {
+      let updatedTasks;
+      let updatedTask;
+      if (editingTask) {
+        updatedTask = { ...editingTask, ...taskData };
+        updatedTasks = tasks.map(t => t.id === editingTask.id ? updatedTask : t);
+        notify('✏️ Tarea actualizada.', 'success');
+      } else {
+        const taskId = `custom_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
+        updatedTask = { id: taskId, ...taskData, aiFeedback: null, photoUrl: null, createdAt: new Date().toISOString() };
+        updatedTasks = [...tasks, updatedTask];
+        notify('⭐ Nueva tarea añadida al horario.', 'success');
       }
 
-      const updatedTasks = [...tasks, newTaskObj];
       persistTasks(updatedTasks);
-
       setShowAddTaskModal(false);
-      setNewTask({ title: '', reward: '1.00', assignedTo: 'kid_enma', day: selectedDay, category: 'General', icon: '⭐' });
-      notify('⭐ Nueva tarea añadida al horario.', 'success');
+      resetNewTaskForm();
+
+      try {
+        const taskRef = doc(db, 'artifacts', appId, 'families', familyId, 'tasks', updatedTask.id);
+        if (editingTask) {
+          await updateDoc(taskRef, taskData);
+        } else {
+          await setDoc(taskRef, updatedTask);
+        }
+      } catch (err) {
+        console.warn('Firestore task save skipped (using local storage fallback)', err);
+        notify('No se pudo sincronizar la tarea con la nube. Se guardó en este dispositivo.', 'error');
+      }
     } catch {
-      notify('Error al crear tarea.', 'error');
+      notify('Error al guardar la tarea.', 'error');
     }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    if (!window.confirm('¿Eliminar esta tarea?')) return;
+    const updatedTasks = tasks.filter(t => t.id !== taskId);
+    persistTasks(updatedTasks);
+
+    try {
+      const taskRef = doc(db, 'artifacts', appId, 'families', familyId, 'tasks', taskId);
+      await setDoc(taskRef, { deleted: true, updatedAt: new Date().toISOString() });
+    } catch (err) {
+      console.warn('Firestore delete sync skipped', err);
+      notify('No se pudo sincronizar la eliminación con la nube. Se guardó localmente.', 'error');
+    }
+
+    notify('🗑️ Tarea eliminada.', 'info');
+  };
+
+  const resetNewRewardForm = () => {
+    setEditingReward(null);
+    setNewReward({ name: '', description: '', price: '5.00', icon: '🎁', category: 'toys', stock: '' });
+  };
+
+  const openManageRewards = () => {
+    resetNewRewardForm();
+    setShowManageRewardsModal(true);
+  };
+
+  const handleSaveReward = async (e) => {
+    e.preventDefault();
+    const name = newReward.name.trim();
+    const price = parseFloat(newReward.price);
+    if (!name || isNaN(price) || price <= 0) return;
+
+    const rewardData = {
+      name,
+      description: newReward.description.trim(),
+      price,
+      icon: newReward.icon || '🎁',
+      category: newReward.category || 'other',
+      stock: newReward.stock === '' ? null : parseInt(newReward.stock),
+      updatedAt: new Date().toISOString()
+    };
+
+    try {
+      let updatedReward;
+      let updatedRewards;
+      if (editingReward) {
+        updatedReward = { ...editingReward, ...rewardData };
+        updatedRewards = rewards.map(r => r.id === editingReward.id ? updatedReward : r);
+        notify('🎁 Recompensa actualizada.', 'success');
+      } else {
+        const rewardId = `reward_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
+        updatedReward = { id: rewardId, ...rewardData, createdAt: new Date().toISOString() };
+        updatedRewards = [...rewards, updatedReward];
+        notify('🎁 Recompensa añadida a la tienda.', 'success');
+      }
+      persistRewards(updatedRewards);
+      resetNewRewardForm();
+
+      try {
+        const rewardRef = doc(db, 'artifacts', appId, 'families', familyId, 'rewards', updatedReward.id);
+        if (editingReward) {
+          await updateDoc(rewardRef, rewardData);
+        } else {
+          await setDoc(rewardRef, updatedReward);
+        }
+      } catch (err) {
+        console.warn('Firestore reward save skipped', err);
+        notify('No se pudo sincronizar la recompensa con la nube. Se guardó localmente.', 'error');
+      }
+    } catch {
+      notify('Error al guardar la recompensa.', 'error');
+    }
+  };
+
+  const handleDeleteReward = async (rewardId) => {
+    if (!window.confirm('¿Eliminar esta recompensa?')) return;
+    const updatedRewards = rewards.filter(r => r.id !== rewardId);
+    persistRewards(updatedRewards);
+    try {
+      const rewardRef = doc(db, 'artifacts', appId, 'families', familyId, 'rewards', rewardId);
+      await setDoc(rewardRef, { deleted: true, updatedAt: new Date().toISOString() });
+    } catch (err) {
+      console.warn('Firestore reward delete skipped', err);
+    }
+    notify('🗑️ Recompensa eliminada.', 'info');
+  };
+
+  const handleRequestReward = async (reward) => {
+    if (!currentKid) return;
+    if (currentKid.balance < reward.price) {
+      notify('No tienes suficiente saldo para esta recompensa.', 'error');
+      return;
+    }
+
+    const purchaseId = `purchase_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
+    const purchase = {
+      id: purchaseId,
+      rewardId: reward.id,
+      rewardName: reward.name,
+      rewardIcon: reward.icon,
+      price: reward.price,
+      kidId: currentKid.id,
+      kidName: currentKid.name,
+      status: 'pending',
+      requestedAt: new Date().toISOString()
+    };
+
+    persistPurchases([...purchases, purchase]);
+    notify(`🛒 Has pedido: ${reward.name}. Espera a que los papás lo aprueben.`, 'success');
+    setShowRewardStoreModal(false);
+
+    try {
+      const purchaseRef = doc(db, 'artifacts', appId, 'families', familyId, 'purchases', purchaseId);
+      await setDoc(purchaseRef, purchase);
+    } catch (err) {
+      console.warn('Firestore purchase setDoc skipped', err);
+      notify('No se pudo sincronizar la solicitud con la nube. Se guardó localmente.', 'error');
+    }
+  };
+
+  const handleApprovePurchase = async (purchase) => {
+    const kid = kids.find(k => k.id === purchase.kidId);
+    if (!kid) return;
+    if (kid.balance < purchase.price) {
+      notify(`${kid.name} no tiene suficiente saldo.`, 'error');
+      return;
+    }
+
+    const updatedPurchases = purchases.map(p => p.id === purchase.id ? { ...p, status: 'approved', approvedAt: new Date().toISOString() } : p);
+    const updatedKids = kids.map(k => k.id === purchase.kidId ? { ...k, balance: Math.max(0, k.balance - purchase.price) } : k);
+    persistPurchases(updatedPurchases);
+    persistKids(updatedKids);
+
+    try {
+      const purchaseRef = doc(db, 'artifacts', appId, 'families', familyId, 'purchases', purchase.id);
+      const kidRef = doc(db, 'artifacts', appId, 'families', familyId, 'kids', purchase.kidId);
+      await updateDoc(purchaseRef, { status: 'approved', approvedAt: new Date().toISOString() });
+      await updateDoc(kidRef, { balance: Math.max(0, kid.balance - purchase.price) });
+    } catch (err) {
+      console.warn('Firestore purchase approval skipped', err);
+      notify('No se pudo sincronizar la aprobación con la nube. Se guardó localmente.', 'error');
+    }
+
+    notify(`✅ Compra aprobada. Se descontaron ${purchase.price.toFixed(2)}€.`, 'success');
+  };
+
+  const handleRejectPurchase = async (purchase) => {
+    const updatedPurchases = purchases.map(p => p.id === purchase.id ? { ...p, status: 'rejected', rejectedAt: new Date().toISOString() } : p);
+    persistPurchases(updatedPurchases);
+
+    try {
+      const purchaseRef = doc(db, 'artifacts', appId, 'families', familyId, 'purchases', purchase.id);
+      await updateDoc(purchaseRef, { status: 'rejected', rejectedAt: new Date().toISOString() });
+    } catch (err) {
+      console.warn('Firestore purchase rejection skipped', err);
+    }
+
+    notify('❌ Compra rechazada.', 'info');
   };
 
   const handlePayout = async (e) => {
@@ -742,6 +1392,32 @@ export default function App() {
     } catch {
       notify('Error al procesar pago.', 'error');
     }
+  };
+
+  const handleApplyPenalty = async (e) => {
+    e.preventDefault();
+    if (!showPenaltyModal) return;
+
+    const amount = parseFloat(penaltyAmount);
+    if (isNaN(amount) || amount <= 0) return;
+
+    const newBalance = Math.max(0, (showPenaltyModal.balance || 0) - amount);
+
+    try {
+      const kidRef = doc(db, 'artifacts', appId, 'families', familyId, 'kids', showPenaltyModal.id);
+      await updateDoc(kidRef, { balance: newBalance });
+    } catch (err) {
+      console.warn('Firestore penalty update skipped', err);
+      notify('No se pudo sincronizar la penalización con la nube. Se guardó localmente.', 'error');
+    }
+
+    const updatedKids = kids.map(k => k.id === showPenaltyModal.id ? { ...k, balance: newBalance } : k);
+    persistKids(updatedKids);
+
+    notify(`⚠️ Penalización de ${amount.toFixed(2)}€ aplicada a ${showPenaltyModal.name}.`, 'info');
+    setShowPenaltyModal(null);
+    setPenaltyAmount('');
+    setPenaltyReason('');
   };
 
   const renderParentDashboard = () => (
@@ -775,7 +1451,7 @@ export default function App() {
           </div>
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Paga Semanal</p>
-            <p className="text-2xl font-bold text-slate-800">10,00 € / sem</p>
+            <p className="text-2xl font-bold text-slate-800">{Number(kids[0]?.weeklyGoal || 10).toFixed(2)} € / sem</p>
             <button 
               onClick={handleResetWeek}
               className="text-xs text-indigo-600 hover:underline font-bold flex items-center gap-1 mt-0.5"
@@ -828,17 +1504,26 @@ export default function App() {
                 <div key={task.id} className="flex flex-col p-4 bg-sky-50/60 rounded-xl border border-sky-100 gap-3">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-center space-x-3">
-                      <span className="text-2xl">{task.icon || '⭐'}</span>
+                      <span className="text-2xl">{task.icon || getCategoryIcon(task.category)}</span>
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="font-semibold text-slate-800">{task.title}</h4>
                           <span className="text-xs bg-sky-200 text-sky-900 px-2 py-0.5 rounded-md font-bold">{task.day}</span>
+                          <span className={`text-[10px] px-2 py-0.5 font-semibold rounded-md border ${getCategoryStyle(task.category)}`}>{task.category}</span>
+                          {task.timerMinutes > 0 && (
+                            <span className="text-[10px] px-2 py-0.5 bg-sky-100 text-sky-700 font-bold rounded-md flex items-center gap-1">
+                              <Clock className="w-3 h-3 text-sky-600" /> {task.timerMinutes} min
+                            </span>
+                          )}
                         </div>
                         <p className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
                           <span>Realizado por: <strong>{kid?.name} {kid?.avatar}</strong></span>
                           <span>•</span>
                           <span className="font-bold text-emerald-600">+{Number(task.reward).toFixed(2)}€</span>
                         </p>
+                        {task.description && (
+                          <p className="text-[11px] text-slate-500 mt-1">{task.description}</p>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center space-x-2 self-end sm:self-center">
@@ -877,39 +1562,154 @@ export default function App() {
         )}
       </div>
 
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-2">
+            <Gift className="w-5 h-5 text-amber-500" />
+            <h2 className="text-lg font-bold text-slate-800">Compras pendientes</h2>
+          </div>
+          <span className="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded-full">
+            {purchases.filter(p => p.status === 'pending').length} por revisar
+          </span>
+        </div>
+
+        {purchases.filter(p => p.status === 'pending').length === 0 ? (
+          <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+            <Gift className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+            <p className="text-sm font-medium text-slate-500">No hay compras pendientes de aprobación.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {purchases.filter(p => p.status === 'pending').map(purchase => (
+              <div key={purchase.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-amber-50/60 rounded-xl border border-amber-100 gap-3">
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">{purchase.rewardIcon || '🎁'}</span>
+                  <div>
+                    <h4 className="font-semibold text-slate-800">{purchase.rewardName}</h4>
+                    <p className="text-xs text-slate-500">Pedido por: <strong>{purchase.kidName}</strong> • {Number(purchase.price || 0).toFixed(2)}€</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2 self-end sm:self-center">
+                  <button
+                    onClick={() => handleRejectPurchase(purchase)}
+                    className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                    title="Rechazar"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => handleApprovePurchase(purchase)}
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm rounded-lg shadow-sm flex items-center gap-1.5 transition"
+                  >
+                    <Check className="w-4 h-4" /> Aprobar compra
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-lg font-bold text-slate-800">Saldo y Paga acumulada</h2>
             <p className="text-xs text-slate-500">Entrega de dinero físico y control de huchas.</p>
           </div>
-          <button 
-            onClick={() => setShowAddTaskModal(true)}
-            className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 transition min-h-[44px]"
-          >
-            <Plus className="w-4 h-4" /> Añadir Tarea
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => openManageRewards()}
+              className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 transition min-h-[44px]"
+            >
+              <Gift className="w-4 h-4" /> Recompensas
+            </button>
+            <button 
+              onClick={() => openAddTaskModal()}
+              data-testid="open-add-task"
+              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-2 transition min-h-[44px]"
+            >
+              <Plus className="w-4 h-4" /> Añadir Tarea
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {kids.map(kid => (
-            <div key={kid.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <span className="text-3xl">{kid.avatar}</span>
-                <div>
-                  <p className="font-bold text-slate-800">{kid.name}</p>
-                  <p className="text-xs text-emerald-600 font-bold">{Number(kid.balance || 0).toFixed(2)}€ ahorrados</p>
+          {kids.map(kid => {
+            const kidTasks = tasks.filter(t => t.assignedTo === kid.id && t.status === 'approved');
+            const earned = kidTasks.reduce((sum, t) => sum + Number(t.reward || 0), 0);
+            const completed = kidTasks.length;
+            const dayOrder = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+            let streak = 0;
+            for (const day of [...dayOrder].reverse()) {
+              const dayTasks = tasks.filter(t => t.assignedTo === kid.id && t.day === day);
+              if (dayTasks.length === 0) continue;
+              if (dayTasks.every(t => t.status === 'approved')) streak++; else break;
+            }
+
+            return (
+              <div key={kid.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex flex-col space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-3xl">{kid.avatar}</span>
+                    <div>
+                      <p className="font-bold text-slate-800">{kid.name}</p>
+                      <p className="text-xs text-emerald-600 font-bold">{Number(kid.balance || 0).toFixed(2)}€ ahorrados</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => { setShowPenaltyModal(kid); setPenaltyAmount(''); setPenaltyReason(''); }}
+                      className="px-3 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-bold rounded-xl shadow-sm transition min-h-[44px]"
+                    >
+                      Penalizar
+                    </button>
+                    <button 
+                      onClick={() => { setShowPayoutModal(kid); setPayoutAmount((kid.balance || 0).toFixed(2)); }}
+                      className="px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-bold rounded-xl shadow-sm transition min-h-[44px]"
+                    >
+                      Pagar
+                    </button>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] font-bold text-slate-500">
+                  <span className="px-2 py-1 bg-white rounded-lg border border-slate-200">{completed} tareas</span>
+                  <span className="px-2 py-1 bg-white rounded-lg border border-slate-200">{earned.toFixed(2)}€ ganados</span>
+                  <span className="px-2 py-1 bg-white rounded-lg border border-slate-200">{streak}🔥 racha</span>
                 </div>
               </div>
-              <button 
-                onClick={() => { setShowPayoutModal(kid); setPayoutAmount((kid.balance || 0).toFixed(2)); }}
-                className="px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-bold rounded-xl shadow-sm transition min-h-[44px]"
-              >
-                Pagar
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
+      </div>
+
+      <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+        <div className="flex items-center space-x-2 mb-4">
+          <Clock className="w-5 h-5 text-indigo-500" />
+          <h2 className="text-lg font-bold text-slate-800">Historial de actividad</h2>
+        </div>
+        {familyHistory.length === 0 ? (
+          <div className="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+            <Clock className="w-10 h-10 text-slate-300 mx-auto mb-2" />
+            <p className="text-sm font-medium text-slate-500">Aún no hay actividad registrada.</p>
+          </div>
+        ) : (
+          <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+            {familyHistory.map(item => (
+              <div key={item.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
+                <div className="flex items-center space-x-3">
+                  <span className="text-xl">{item.icon}</span>
+                  <div>
+                    <p className="font-bold text-slate-800">{item.title}</p>
+                    <p className="text-[10px] text-slate-500">{item.kidName} • {new Date(item.date).toLocaleString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</p>
+                  </div>
+                </div>
+                <span className={`font-black ${item.amount >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                  {item.amount >= 0 ? '+' : ''}{item.amount.toFixed(2)}€
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -919,20 +1719,31 @@ export default function App() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-3 rounded-2xl shadow-sm border border-slate-100 gap-2">
         <span className="text-xs font-bold text-slate-400 uppercase tracking-wider px-2">Seleccionar Perfil:</span>
         <div className="flex flex-wrap items-center gap-2">
-          {kids.map(kid => (
-            <button
-              key={kid.id}
-              onClick={() => setActiveKidId(kid.id)}
-              className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center space-x-2 transition ${
-                activeKidId === kid.id 
-                  ? 'bg-indigo-600 text-white shadow-md scale-105' 
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              <span className="text-base">{kid.avatar}</span>
-              <span>{kid.name}</span>
-            </button>
-          ))}
+          {kids.map(kid => {
+            const color = KID_COLORS.find(c => c.id === kid.color) || KID_COLORS[0];
+            return (
+              <button
+                key={kid.id}
+                onClick={() => setActiveKidId(kid.id)}
+                className={`px-4 py-2 rounded-xl font-bold text-xs flex items-center space-x-2 transition border-2 ${
+                  activeKidId === kid.id
+                    ? `${color.bg} text-white shadow-md scale-105 border-transparent`
+                    : `bg-white text-slate-600 hover:${color.light} ${color.border}`
+                }`}
+              >
+                <span className="text-base">{kid.avatar}</span>
+                <span>{kid.name}</span>
+              </button>
+            );
+          })}
+          <button
+            onClick={() => { setEditingKid(null); setShowManageKidsModal(true); }}
+            className="px-3 py-2 rounded-xl font-bold text-xs flex items-center space-x-1 transition bg-slate-100 text-slate-500 hover:bg-slate-200 border border-dashed border-slate-300"
+            title="Gestionar hijos"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Gestionar</span>
+          </button>
         </div>
       </div>
 
@@ -946,10 +1757,10 @@ export default function App() {
             <div className="relative z-10 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <span className="text-4xl p-2 bg-white/10 rounded-2xl backdrop-blur-sm">{currentKid.avatar}</span>
+                  <span className="text-4xl p-2 bg-white/10 rounded-2xl backdrop-blur-sm border-2 border-white/20">{currentKid.avatar}</span>
                   <div>
                     <h1 className="text-2xl font-black tracking-tight">¡Hola, {currentKid.name}! 👋</h1>
-                    <p className="text-indigo-200 text-xs font-semibold">Objetivo semanal: 10,00 € completando tus tareas</p>
+                    <p className="text-indigo-200 text-xs font-semibold" data-testid="weekly-goal-display">Objetivo semanal: {Number(currentKid.weeklyGoal || 10).toFixed(2)} € completando tus tareas</p>
                   </div>
                 </div>
               </div>
@@ -979,7 +1790,7 @@ export default function App() {
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
                 <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3.5 border border-white/15">
                   <div className="flex items-center space-x-2 text-indigo-200 text-xs font-semibold mb-1">
                     <PiggyBank className="w-4 h-4 text-teal-300" />
@@ -996,7 +1807,7 @@ export default function App() {
                     <span>Ganado esta semana</span>
                   </div>
                   <div className="text-3xl font-extrabold text-emerald-300">
-                    {weeklyEarnedApproved.toFixed(2)}€ / 10€
+                    {weeklyEarnedApproved.toFixed(2)}€ / {Number(currentKid.weeklyGoal || 10).toFixed(2)}€
                   </div>
                 </div>
 
@@ -1009,22 +1820,57 @@ export default function App() {
                     +{pendingReviewAmount.toFixed(2)}€
                   </div>
                 </div>
+
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3.5 border border-white/15">
+                  <div className="flex items-center space-x-2 text-indigo-200 text-xs font-semibold mb-1">
+                    <Flame className="w-4 h-4 text-orange-300" />
+                    <span>Racha de días</span>
+                  </div>
+                  <div className="text-3xl font-extrabold text-orange-300">
+                    {kidStats.streak} 🔥
+                  </div>
+                </div>
               </div>
 
               <div className="bg-black/20 backdrop-blur-sm rounded-2xl p-4 space-y-2">
                 <div className="flex items-center justify-between text-xs font-bold">
                   <span className="flex items-center gap-1.5 text-indigo-200">
-                    <Gift className="w-4 h-4 text-teal-300" /> Objetivo Semanal: 10.00 €
+                    <Gift className="w-4 h-4 text-teal-300" /> Objetivo Semanal: {Number(currentKid.weeklyGoal || 10).toFixed(2)} €
+                    {!editingWeeklyGoal ? (
+                      <button
+                        onClick={() => { setEditingWeeklyGoal(true); setWeeklyGoalInput(String(currentKid.weeklyGoal || 10)); }}
+                        className="text-[10px] underline text-teal-300 hover:text-teal-200 ml-1"
+                        data-testid="edit-weekly-goal"
+                      >
+                        Editar
+                      </button>
+                    ) : (
+                      <span className="flex items-center gap-1 ml-1">
+                        <input
+                          type="number"
+                          step="0.50"
+                          min="1"
+                          value={weeklyGoalInput}
+                          onChange={(e) => setWeeklyGoalInput(e.target.value)}
+                          onBlur={handleSaveWeeklyGoal}
+                          onKeyDown={(e) => { if (e.key === 'Enter') handleSaveWeeklyGoal(); }}
+                          className="w-16 px-1.5 py-0.5 text-[10px] rounded text-slate-800 border border-slate-200"
+                          autoFocus
+                          data-testid="weekly-goal-input"
+                        />
+                        <span className="text-teal-300">€</span>
+                      </span>
+                    )}
                   </span>
                   <span>
-                    {Math.round((weeklyEarnedApproved / 10.00) * 100)}% Completado
+                    {Math.round((weeklyEarnedApproved / (currentKid.weeklyGoal || 10)) * 100)}% Completado
                   </span>
                 </div>
                 <div className="w-full bg-black/30 h-3.5 rounded-full overflow-hidden p-0.5">
                   <div 
                     className="bg-gradient-to-r from-teal-400 to-emerald-400 h-full rounded-full transition-all duration-500 shadow-sm"
                     style={{ 
-                      width: `${Math.min(100, Math.max(0, (weeklyEarnedApproved / 10.00) * 100))}%` 
+                      width: `${Math.min(100, Math.max(0, (weeklyEarnedApproved / (currentKid.weeklyGoal || 10)) * 100))}%` 
                     }}
                   />
                 </div>
@@ -1072,16 +1918,23 @@ export default function App() {
                 </button>
               </div>
 
-              <button 
-                onClick={() => {
-                  setNewTask({ ...newTask, assignedTo: activeKidId, day: selectedDay });
-                  setShowAddTaskModal(true);
-                }}
-                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl flex items-center space-x-1.5 transition self-start sm:self-auto shrink-0 min-h-[44px]"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Añadir Tarea</span>
-              </button>
+              <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                <button
+                  onClick={() => setShowRewardStoreModal(true)}
+                  className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl flex items-center space-x-1.5 transition min-h-[44px]"
+                >
+                  <Gift className="w-3.5 h-3.5" />
+                  <span>Tienda</span>
+                </button>
+                <button 
+                  onClick={() => openAddTaskModal()}
+                  data-testid="open-add-task"
+                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl flex items-center space-x-1.5 transition min-h-[44px]"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Añadir Tarea</span>
+                </button>
+              </div>
             </div>
 
             {viewMode === 'day' && (
@@ -1131,108 +1984,24 @@ export default function App() {
                         return (aExtra ? 1 : 0) - (bExtra ? 1 : 0);
                       })
                       .map(task => {
-                        const isDone = task.status === 'completed';
-                        const isApproved = task.status === 'approved';
-
                         return (
-                          <div 
-                            key={task.id} 
-                            className={`p-4 rounded-2xl border transition flex flex-col justify-between space-y-3 ${
-                              isApproved 
-                                ? 'bg-emerald-50/70 border-emerald-200' 
-                                : isDone 
-                                ? 'bg-sky-50/70 border-sky-200' 
-                                : task.isExtra 
-                                ? 'bg-indigo-50/70 border-indigo-200 hover:border-indigo-300' 
-                                : 'bg-white border-slate-200 hover:border-indigo-300 shadow-sm'
-                            }`}
-                          >
-                            <div className="flex items-start justify-between">
-                              <div className="flex items-center space-x-3">
-                                <span className="text-3xl p-2 bg-slate-100 rounded-xl">{task.icon || '⭐'}</span>
-                                <div>
-                                  <h3 className={`font-bold text-slate-800 text-sm ${isApproved ? 'line-through text-slate-500' : ''}`}>
-                                    {task.title}
-                                  </h3>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 font-semibold rounded-md">
-                                      {task.category}
-                                    </span>
-                                    {task.isExtra && (
-                                      <span className="text-[10px] px-2 py-0.5 bg-indigo-100 text-indigo-700 font-bold rounded-md flex items-center gap-1">
-                                        <Flame className="w-3 h-3 text-indigo-500" /> BONO EXTRA
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                              <span className={`text-base font-black ${task.isExtra ? 'text-indigo-600' : 'text-emerald-600'}`}>
-                                +{Number(task.reward).toFixed(2)}€
-                              </span>
-                            </div>
-
-                            {task.aiFeedback && (
-                              <div className="bg-sky-100/70 p-2.5 rounded-xl text-xs space-y-1 text-slate-700">
-                                <p className="font-bold text-sky-900 flex items-center gap-1">
-                                  <Sparkles className="w-3.5 h-3.5 text-sky-600" /> Comentario IA:
-                                </p>
-                                <p>{task.aiFeedback}</p>
-                              </div>
-                            )}
-
-                            <div className="pt-1 flex items-center space-x-2">
-                              {isApproved ? (
-                                <div className="w-full py-2 bg-emerald-100 text-emerald-800 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5">
-                                  <CheckCircle className="w-4 h-4 text-emerald-600" /> ¡Completada y Sumada!
-                                </div>
-                              ) : isDone ? (
-                                <div className="w-full py-2 bg-sky-100 text-sky-800 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5">
-                                  <Clock className="w-4 h-4 text-sky-600 animate-pulse" /> Esperando aprobación de los papás
-                                </div>
-                              ) : (
-                                <>
-                                  <button
-                                    onClick={() => handleMarkTaskCompleted(task.id)}
-                                    className={`flex-1 py-3 font-black text-xs uppercase tracking-wider rounded-xl shadow-sm flex items-center justify-center gap-2 transition active:scale-95 min-h-[48px] ${
-                                      task.isExtra 
-                                        ? 'bg-indigo-600 hover:bg-indigo-700 text-white' 
-                                        : 'bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-600 hover:to-emerald-600 text-white'
-                                    }`}
-                                  >
-                                    <Zap className="w-4 h-4 fill-current" /> Hecho
-                                  </button>
-
-                                  <label className="p-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl cursor-pointer transition flex items-center justify-center min-h-[48px] min-w-[48px]" title="Subir foto comprobante con IA">
-                                    {inspectingTaskId === task.id && aiInspectingTask ? (
-                                      <Loader2 className="w-4 h-4 animate-spin text-indigo-600" />
-                                    ) : (
-                                      <Camera className="w-4 h-4" />
-                                    )}
-                                    <input 
-                                      type="file" 
-                                      accept="image/*" 
-                                      className="hidden" 
-                                      onChange={(e) => handlePhotoUploadAndInspect(task.id, e.target.files[0])}
-                                      disabled={aiInspectingTask}
-                                    />
-                                  </label>
-                                </>
-                              )}
-
-                              <button
-                                onClick={() => handleSpeakCheer(task.id, `¡Muy bien ${currentKid.name}! ¡Sigue así completando la tarea ${task.title} para ganar tu recompensa!`)}
-                                className="p-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 rounded-xl transition flex items-center justify-center min-h-[48px] min-w-[48px]"
-                                title="Escuchar voz de ánimo IA"
-                                disabled={speakingTaskId === task.id}
-                              >
-                                {speakingTaskId === task.id ? (
-                                  <Loader2 className="w-4 h-4 animate-spin text-indigo-600" />
-                                ) : (
-                                  <Volume2 className="w-4 h-4" />
-                                )}
-                              </button>
-                            </div>
-                          </div>
+                          <TaskCard
+                            key={task.id}
+                            task={task}
+                            currentKid={currentKid}
+                            role={role}
+                            isParentUnlocked={isParentUnlocked}
+                            onMarkCompleted={handleMarkTaskCompleted}
+                            onPhotoUpload={handlePhotoUploadAndInspect}
+                            onSpeakCheer={handleSpeakCheer}
+                            onEdit={openAddTaskModal}
+                            onDelete={handleDeleteTask}
+                            inspectingTaskId={inspectingTaskId}
+                            aiInspectingTask={aiInspectingTask}
+                            speakingTaskId={speakingTaskId}
+                            getCategoryIcon={getCategoryIcon}
+                            getCategoryStyle={getCategoryStyle}
+                          />
                         );
                       })}
                   </div>
@@ -1243,123 +2012,142 @@ export default function App() {
             {viewMode === 'weekly' && (
               <div className="space-y-4 pt-2">
                 <div className="p-3 bg-indigo-50 border border-indigo-100 rounded-2xl text-xs text-indigo-900 flex items-center gap-2">
-                  <Dumbbell className="w-4 h-4 text-indigo-600 shrink-0" />
-                  <span><strong>Desglose semanal completo:</strong> Tareas diarias obligatorias agrupadas primero y Entrenamiento Gimnasio al final como extra.</span>
+                  <LayoutGrid className="w-4 h-4 text-indigo-600 shrink-0" />
+                  <span><strong>Vista semanal:</strong> Todas las tareas de {currentKid?.name} organizadas por día.</span>
                 </div>
 
-                {/* Vista móvil: tarjetas */}
-                <div className="md:hidden space-y-4">
-                  {[...DAILY_TASK_TEMPLATES]
-                    .sort((a, b) => (a.isExtra ? 1 : 0) - (b.isExtra ? 1 : 0))
-                    .map((tmpl) => (
-                      <div key={tmpl.templateId} className={`p-4 rounded-2xl border shadow-sm ${tmpl.isExtra ? 'bg-gradient-to-br from-indigo-50 to-white border-indigo-200' : 'bg-white border-slate-200'}`}>
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center space-x-2 font-semibold text-slate-800">
-                            <span className="text-2xl bg-slate-100 p-1.5 rounded-xl">{tmpl.icon}</span>
-                            <div className="flex flex-col">
-                              <span className="text-sm">{tmpl.title}</span>
-                              {tmpl.isExtra && <span className="text-[10px] bg-indigo-200 text-indigo-800 px-1.5 py-0.5 rounded font-bold w-fit">EXTRA</span>}
+                {(() => {
+                  const kidTasks = tasks.filter(t => t.assignedTo === activeKidId);
+                  const groups = {};
+                  kidTasks.forEach(t => {
+                    const key = `${t.title}|${t.category}|${t.isExtra ? 1 : 0}`;
+                    if (!groups[key]) {
+                      groups[key] = {
+                        title: t.title,
+                        icon: t.icon || getCategoryIcon(t.category),
+                        category: t.category,
+                        reward: t.reward,
+                        isExtra: t.isExtra,
+                        tasksByDay: {}
+                      };
+                    }
+                    groups[key].tasksByDay[t.day] = t;
+                  });
+                  const rows = Object.values(groups).sort((a, b) => (a.isExtra ? 1 : 0) - (b.isExtra ? 1 : 0));
+
+                  return rows.length === 0 ? (
+                    <div className="text-center py-10 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                      <LayoutGrid className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                      <p className="text-sm font-semibold text-slate-500">No hay tareas para esta semana.</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="md:hidden space-y-4">
+                        {rows.map((row, idx) => (
+                          <div key={idx} className={`p-4 rounded-2xl border shadow-sm ${row.isExtra ? 'bg-gradient-to-br from-indigo-50 to-white border-indigo-200' : 'bg-white border-slate-200'}`}>
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="flex items-center space-x-2 font-semibold text-slate-800">
+                                <span className="text-2xl bg-slate-100 p-1.5 rounded-xl">{row.icon}</span>
+                                <div className="flex flex-col">
+                                  <span className="text-sm">{row.title}</span>
+                                  <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold w-fit border ${getCategoryStyle(row.category)}`}>{row.category}</span>
+                                </div>
+                              </div>
+                              <span className="font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg text-sm">{Number(row.reward).toFixed(2)}€</span>
+                            </div>
+                            <div className="flex items-center justify-between gap-1">
+                              {DAYS.map(day => {
+                                const task = row.tasksByDay[day];
+                                const isApproved = task?.status === 'approved';
+                                const isDone = task?.status === 'completed';
+
+                                return (
+                                  <div key={day} className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
+                                    <span className="text-[10px] font-bold text-slate-500 uppercase">{day.substring(0, 3)}</span>
+                                    {task ? (
+                                      <button
+                                        onClick={() => { if (task.status === 'pending') handleMarkTaskCompleted(task.id); }}
+                                        className={`w-full aspect-square max-w-[44px] rounded-xl font-bold flex items-center justify-center transition shadow-sm ${
+                                          isApproved
+                                            ? 'bg-emerald-500 text-white shadow-emerald-200'
+                                            : isDone
+                                            ? 'bg-sky-400 text-white shadow-sky-200 animate-pulse'
+                                            : 'bg-slate-100 text-slate-400 hover:bg-indigo-200 hover:text-indigo-900'
+                                        }`}
+                                        title={`${day}: ${task.title}`}
+                                      >
+                                        {isApproved ? <Check className="w-5 h-5" /> : isDone ? <Clock className="w-5 h-5" /> : <Circle className="w-4 h-4 text-slate-300" />}
+                                      </button>
+                                    ) : (
+                                      <span className="w-full aspect-square max-w-[44px] rounded-xl flex items-center justify-center text-slate-300 bg-slate-50">-</span>
+                                    )}
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
-                          <span className="font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg text-sm">{tmpl.reward.toFixed(2)}€</span>
-                        </div>
-                        <div className="flex items-center justify-between gap-1">
-                          {DAYS.map(day => {
-                            const task = tasks.find(t => t.assignedTo === activeKidId && t.day === day && (t.title.includes(tmpl.title.substring(0, 10)) || t.id.includes(tmpl.templateId)));
-                            const isApproved = task?.status === 'approved';
-                            const isDone = task?.status === 'completed';
-
-                            return (
-                              <div key={day} className="flex flex-col items-center gap-1.5 flex-1 min-w-0">
-                                <span className="text-[10px] font-bold text-slate-500 uppercase">{day.substring(0, 3)}</span>
-                                {task ? (
-                                  <button
-                                    onClick={() => {
-                                      if (task.status === 'pending') handleMarkTaskCompleted(task.id);
-                                    }}
-                                    className={`w-full aspect-square max-w-[44px] rounded-xl font-bold flex items-center justify-center transition shadow-sm ${
-                                      isApproved
-                                        ? 'bg-emerald-500 text-white shadow-emerald-200'
-                                        : isDone
-                                        ? 'bg-sky-400 text-white shadow-sky-200 animate-pulse'
-                                        : 'bg-slate-100 text-slate-400 hover:bg-indigo-200 hover:text-indigo-900'
-                                    }`}
-                                    title={`${day}: ${task.title} - ${isApproved ? 'Aprobada' : isDone ? 'En revisión' : 'Hacer clic para marcar'}`}
-                                  >
-                                    {isApproved ? <Check className="w-5 h-5" /> : isDone ? <Clock className="w-5 h-5" /> : <Circle className="w-4 h-4 text-slate-300" />}
-                                  </button>
-                                ) : (
-                                  <span className="w-full aspect-square max-w-[44px] rounded-xl flex items-center justify-center text-slate-300 bg-slate-50">-</span>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
+                        ))}
                       </div>
-                    ))}
-                </div>
 
-                {/* Vista desktop: tabla */}
-                <div className="hidden md:block overflow-x-auto rounded-2xl border border-slate-200">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-100 text-slate-700 font-bold">
-                      <tr>
-                        <th className="p-3 border-b">Tarea / Tarea Diaria</th>
-                        <th className="p-3 border-b text-center">Valor</th>
-                        {DAYS.map(day => (
-                          <th key={day} className="p-3 border-b text-center min-w-[70px]">{day.substring(0, 3)}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {[...DAILY_TASK_TEMPLATES]
-                        .sort((a, b) => (a.isExtra ? 1 : 0) - (b.isExtra ? 1 : 0))
-                        .map((tmpl) => (
-                          <tr key={tmpl.templateId} className={tmpl.isExtra ? 'bg-indigo-50/50 font-medium' : 'hover:bg-slate-50'}>
-                            <td className="p-3 font-semibold text-slate-800">
-                              <div className="flex items-center space-x-2">
-                                <span>{tmpl.icon}</span>
-                                <span>{tmpl.title}</span>
-                                {tmpl.isExtra && <span className="text-[10px] bg-indigo-200 text-indigo-800 px-1.5 py-0.5 rounded font-bold">EXTRA</span>}
-                              </div>
-                            </td>
-                            <td className="p-3 text-center font-bold text-emerald-600">
-                              {tmpl.reward.toFixed(2)}€
-                            </td>
-                            {DAYS.map(day => {
-                              const task = tasks.find(t => t.assignedTo === activeKidId && t.day === day && (t.title.includes(tmpl.title.substring(0, 10)) || t.id.includes(tmpl.templateId)));
-                              const isApproved = task?.status === 'approved';
-                              const isDone = task?.status === 'completed';
-
-                              return (
-                                <td key={day} className="p-2 text-center">
-                                  {task ? (
-                                    <button
-                                      onClick={() => {
-                                        if (task.status === 'pending') handleMarkTaskCompleted(task.id);
-                                      }}
-                                      className={`w-10 h-10 rounded-xl font-bold flex items-center justify-center mx-auto transition ${
-                                        isApproved 
-                                          ? 'bg-emerald-500 text-white' 
-                                          : isDone 
-                                          ? 'bg-sky-400 text-white animate-pulse' 
-                                          : 'bg-slate-100 text-slate-400 hover:bg-indigo-200 hover:text-indigo-900'
-                                      }`}
-                                      title={`${day}: ${task.title} - ${isApproved ? 'Aprobada' : isDone ? 'En revisión' : 'Hacer clic para marcar'}`}
-                                    >
-                                      {isApproved ? <Check className="w-5 h-5" /> : isDone ? <Clock className="w-5 h-5" /> : <Circle className="w-4 h-4 text-slate-300" />}
-                                    </button>
-                                  ) : (
-                                    <span className="text-slate-300">-</span>
-                                  )}
+                      <div className="hidden md:block overflow-x-auto rounded-2xl border border-slate-200">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-slate-100 text-slate-700 font-bold">
+                            <tr>
+                              <th className="p-3 border-b">Tarea</th>
+                              <th className="p-3 border-b text-center">Valor</th>
+                              {DAYS.map(day => (
+                                <th key={day} className="p-3 border-b text-center min-w-[70px]">{day.substring(0, 3)}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100">
+                            {rows.map((row, idx) => (
+                              <tr key={idx} className={row.isExtra ? 'bg-indigo-50/50 font-medium' : 'hover:bg-slate-50'}>
+                                <td className="p-3 font-semibold text-slate-800">
+                                  <div className="flex items-center space-x-2">
+                                    <span>{row.icon}</span>
+                                    <span>{row.title}</span>
+                                    {row.isExtra && <span className="text-[10px] bg-indigo-200 text-indigo-800 px-1.5 py-0.5 rounded font-bold">EXTRA</span>}
+                                  </div>
                                 </td>
-                              );
-                            })}
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                </div>
+                                <td className="p-3 text-center font-bold text-emerald-600">
+                                  {Number(row.reward).toFixed(2)}€
+                                </td>
+                                {DAYS.map(day => {
+                                  const task = row.tasksByDay[day];
+                                  const isApproved = task?.status === 'approved';
+                                  const isDone = task?.status === 'completed';
+
+                                  return (
+                                    <td key={day} className="p-2 text-center">
+                                      {task ? (
+                                        <button
+                                          onClick={() => { if (task.status === 'pending') handleMarkTaskCompleted(task.id); }}
+                                          className={`w-10 h-10 rounded-xl font-bold flex items-center justify-center mx-auto transition ${
+                                            isApproved 
+                                              ? 'bg-emerald-500 text-white' 
+                                              : isDone 
+                                              ? 'bg-sky-400 text-white animate-pulse' 
+                                              : 'bg-slate-100 text-slate-400 hover:bg-indigo-200 hover:text-indigo-900'
+                                          }`}
+                                          title={`${day}: ${task.title}`}
+                                        >
+                                          {isApproved ? <Check className="w-5 h-5" /> : isDone ? <Clock className="w-5 h-5" /> : <Circle className="w-4 h-4 text-slate-300" />}
+                                        </button>
+                                      ) : (
+                                        <span className="text-slate-300">-</span>
+                                      )}
+                                    </td>
+                                  );
+                                })}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             )}
 
@@ -1385,74 +2173,17 @@ export default function App() {
                         const statusOrder = { approved: 0, completed: 1 };
                         return (statusOrder[a.status] || 2) - (statusOrder[b.status] || 2);
                       })
-                      .map(task => {
-                        const isApproved = task.status === 'approved';
-
-                        return (
-                          <div
-                            key={task.id}
-                            className={`p-4 rounded-2xl border transition flex flex-col justify-between space-y-3 ${
-                              isApproved
-                                ? 'bg-emerald-50/70 border-emerald-200'
-                                : 'bg-sky-50/70 border-sky-200'
-                            }`}
-                          >
-                            <div className="flex items-start justify-between">
-                              <div className="flex items-center space-x-3">
-                                <span className="text-3xl p-2 bg-white/70 rounded-xl">{task.icon || '⭐'}</span>
-                                <div>
-                                  <h3 className={`font-bold text-slate-800 text-sm ${isApproved ? 'line-through text-slate-500' : ''}`}>
-                                    {task.title}
-                                  </h3>
-                                  <div className="flex items-center gap-2 mt-1 flex-wrap">
-                                    <span className="text-[10px] px-2 py-0.5 bg-white/70 text-slate-600 font-semibold rounded-md">
-                                      {task.day}
-                                    </span>
-                                    <span className="text-[10px] px-2 py-0.5 bg-white/70 text-slate-500 font-medium rounded-md">
-                                      {task.category}
-                                    </span>
-                                    {task.isExtra && (
-                                      <span className="text-[10px] px-2 py-0.5 bg-indigo-100 text-indigo-700 font-bold rounded-md">
-                                        <Flame className="w-3 h-3 text-indigo-500 inline mr-0.5" /> BONO
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                              <span className={`text-base font-black ${task.isExtra ? 'text-indigo-600' : 'text-emerald-600'}`}>
-                                +{Number(task.reward).toFixed(2)}€
-                              </span>
-                            </div>
-
-                            {task.aiFeedback && (
-                              <div className="bg-white/70 p-2.5 rounded-xl text-xs space-y-1 text-slate-700">
-                                <p className="font-bold text-sky-900 flex items-center gap-1">
-                                  <Sparkles className="w-3.5 h-3.5 text-sky-600" /> Comentario IA:
-                                </p>
-                                <p>{task.aiFeedback}</p>
-                              </div>
-                            )}
-
-                            {task.photoUrl && (
-                              <div className="flex items-start space-x-3 bg-white/70 p-3 rounded-xl">
-                                <img src={task.photoUrl} alt="Prueba tarea" className="w-16 h-16 object-cover rounded-lg border border-sky-200 shrink-0" />
-                              </div>
-                            )}
-
-                            <div className="pt-1 flex items-center space-x-2">
-                              {isApproved ? (
-                                <div className="w-full py-2 bg-emerald-100 text-emerald-800 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5">
-                                  <CheckCircle className="w-4 h-4 text-emerald-600" /> ¡Completada y Sumada!
-                                </div>
-                              ) : (
-                                <div className="w-full py-2 bg-sky-100 text-sky-800 font-bold text-xs rounded-xl flex items-center justify-center gap-1.5">
-                                  <Clock className="w-4 h-4 text-sky-600 animate-pulse" /> Esperando aprobación de los papás
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
+                      .map(task => (
+                        <TaskCard
+                          key={task.id}
+                          task={task}
+                          currentKid={currentKid}
+                          role={role}
+                          readonly
+                          getCategoryIcon={getCategoryIcon}
+                          getCategoryStyle={getCategoryStyle}
+                        />
+                      ))}
                   </div>
                 )}
               </div>
@@ -1463,67 +2194,35 @@ export default function App() {
     </div>
   );
 
+  if (showOnboarding) {
+    return (
+      <div className={`min-h-screen bg-slate-900 transition-colors duration-300 ${darkMode ? 'dark' : ''}`}>
+        <OnboardingModal
+          show={showOnboarding}
+          kids={kids}
+          onComplete={handleOnboardingComplete}
+          avatarOptions={AVATAR_OPTIONS}
+          kidColors={KID_COLORS}
+        />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-12">
-      {notification && (
-        <div className={`fixed bottom-5 left-4 right-4 sm:left-auto sm:right-5 z-50 px-4 py-3 rounded-2xl shadow-xl text-xs font-bold flex items-center space-x-2 transition max-w-sm ${
-          notification.type === 'error' ? 'bg-rose-600 text-white' : notification.type === 'success' ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-white'
-        }`}>
-          <span className="break-words">{notification.msg}</span>
-        </div>
-      )}
+    <div className={`min-h-screen bg-slate-50 text-slate-900 font-sans pb-12 transition-colors duration-300 ${darkMode ? 'dark bg-slate-900 text-slate-100' : ''}`}>
+      <Notification notification={notification} />
 
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
-        <div className="max-w-5xl mx-auto px-4 py-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <div className="flex items-center space-x-3 shrink-0">
-            <div className="w-10 h-10 bg-indigo-600 text-white rounded-2xl flex items-center justify-center font-black text-xl shadow-sm shrink-0">
-              💶
-            </div>
-            <div className="min-w-0">
-              <h1 className="font-extrabold text-base text-slate-800 leading-tight truncate">KidCoins</h1>
-              <p className="text-xs text-slate-400 font-medium mt-0.5">Enma y Matías</p>
-            </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              onClick={() => setShowFamilyModal(true)}
-              className="px-2.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs rounded-xl flex items-center space-x-1.5 transition border border-indigo-200 min-h-[40px]"
-              title="Sincronizar entre varios teléfonos/dispositivos"
-            >
-              <Users className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Familia:</span>
-              <span className="font-mono bg-indigo-200 text-indigo-900 px-1.5 py-0.5 rounded text-[11px]">{familyId}</span>
-              {syncStatus === 'synced' && <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 ml-1" title="Sincronizado con la nube">●</span>}
-              {syncStatus === 'offline' && <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-rose-100 text-rose-600 ml-1" title="Sin conexión con la nube">●</span>}
-              {syncStatus === 'connecting' && <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-100 text-amber-600 ml-1 animate-pulse" title="Conectando...">●</span>}
-            </button>
-
-            <div className="bg-slate-100 p-1 rounded-xl flex items-center space-x-1">
-              <button
-                onClick={() => toggleRole('child')}
-                className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition min-h-[40px] ${
-                  role === 'child' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                <User className="w-3.5 h-3.5 text-indigo-600" />
-                <span>Niños</span>
-              </button>
-
-              <button
-                onClick={() => toggleRole('parent')}
-                className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center space-x-1.5 transition min-h-[40px] ${
-                  role === 'parent' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                <Shield className="w-3.5 h-3.5" />
-                <span>Padres</span>
-                {!isParentUnlocked && <Lock className="w-3 h-3 text-slate-400 ml-0.5" />}
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header
+        role={role}
+        familyId={familyId}
+        syncStatus={syncStatus}
+        isParentUnlocked={isParentUnlocked}
+        toggleRole={toggleRole}
+        setShowFamilyModal={setShowFamilyModal}
+        kids={kids}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+      />
 
       <main className="max-w-5xl mx-auto px-4 pt-6">
         {role === 'parent' ? renderParentDashboard() : renderChildDashboard()}
@@ -1566,6 +2265,13 @@ export default function App() {
                   <span>{copiedSuccess ? 'Copiado' : 'Copiar'}</span>
                 </button>
               </div>
+              <button
+                type="button"
+                onClick={handleRegenerateFamilyCode}
+                className="w-full py-2 text-xs font-bold text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition flex items-center justify-center gap-1.5"
+              >
+                <RefreshCw className="w-3.5 h-3.5" /> Generar nuevo código de familia
+              </button>
             </div>
 
             <form onSubmit={handleJoinFamily} className="pt-3 border-t space-y-2">
@@ -1601,61 +2307,60 @@ export default function App() {
         </div>
       )}
 
-      {showPinModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 max-h-[90vh] overflow-y-auto max-w-xs w-full shadow-2xl space-y-4 text-center">
-            <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto">
-              <Lock className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="font-extrabold text-slate-800 text-lg">Acceso Padres</h3>
-              <p className="text-xs text-slate-400 mt-1">Introduce el PIN (Predeterminado: 1234 o déjalo en blanco)</p>
-            </div>
-            <form onSubmit={handlePinSubmit} className="space-y-3">
-              <input
-                type="password"
-                maxLength={4}
-                value={pinInput}
-                onChange={(e) => setPinInput(e.target.value)}
-                placeholder="1234"
-                className="w-full p-3 text-center text-xl font-mono tracking-widest border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500"
-                autoFocus
-              />
-              {pinError && <p className="text-xs text-rose-500 font-bold">PIN Incorrecto</p>}
-              <div className="flex space-x-2">
-                <button
-                  type="button"
-                  onClick={() => setShowPinModal(false)}
-                  className="flex-1 py-2.5 bg-slate-100 text-slate-600 font-bold text-xs rounded-xl"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl"
-                >
-                  Entrar
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <PinModal
+        showPinModal={showPinModal}
+        setShowPinModal={setShowPinModal}
+        pinInput={pinInput}
+        setPinInput={setPinInput}
+        pinError={pinError}
+        setPinError={setPinError}
+        handlePinSubmit={handlePinSubmit}
+      />
 
       {showAddTaskModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 max-h-[90vh] overflow-y-auto max-w-md w-full shadow-2xl space-y-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 max-h-[90vh] overflow-y-auto max-w-lg w-full shadow-2xl space-y-4 my-auto">
             <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="font-extrabold text-slate-800 text-base">Crear Nueva Tarea Manual</h3>
-              <button onClick={() => setShowAddTaskModal(false)} className="text-slate-400 hover:text-slate-600">
+              <h3 className="font-extrabold text-slate-800 text-base">{editingTask ? 'Editar Tarea' : 'Crear Nueva Tarea'}</h3>
+              <button onClick={() => { setShowAddTaskModal(false); resetNewTaskForm(); }} className="text-slate-400 hover:text-slate-600">
                 <X className="w-5 h-5" />
               </button>
             </div>
+
+            {!editingTask && (
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-700 block">Plantillas rápidas:</label>
+                <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
+                  {TASK_TEMPLATES.map((tmpl, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setNewTask({
+                        ...newTask,
+                        title: tmpl.title,
+                        description: tmpl.description,
+                        reward: String(tmpl.reward),
+                        category: tmpl.category,
+                        icon: tmpl.icon,
+                        isExtra: !!tmpl.isExtra,
+                        timerMinutes: tmpl.timerMinutes || 0
+                      })}
+                      className="px-2.5 py-1.5 bg-slate-50 hover:bg-indigo-50 border border-slate-200 rounded-lg text-[11px] font-semibold text-slate-700 flex items-center gap-1.5 transition"
+                    >
+                      <span>{tmpl.icon}</span>
+                      <span>{tmpl.title}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleCreateTask} className="space-y-3 text-xs">
               <div>
                 <label className="font-bold text-slate-700 block mb-1">Título de la tarea:</label>
                 <input
                   type="text"
+                  name="title"
                   required
                   placeholder="Ej: Leer 20 minutos"
                   value={newTask.title}
@@ -1663,12 +2368,23 @@ export default function App() {
                   className="w-full p-2.5 border border-slate-200 rounded-xl"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Descripción:</label>
+                <textarea
+                  placeholder="Describe en qué consiste la tarea..."
+                  value={newTask.description}
+                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                  rows={2}
+                  className="w-full p-2.5 border border-slate-200 rounded-xl resize-none"
+                />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="font-bold text-slate-700 block mb-1">Recompensa (€):</label>
                   <input
                     type="number"
                     step="0.05"
+                    min="0"
                     required
                     value={newTask.reward}
                     onChange={(e) => setNewTask({ ...newTask, reward: e.target.value })}
@@ -1686,17 +2402,55 @@ export default function App() {
                   </select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">Día de la semana:</label>
-                  <select
-                    value={newTask.day}
-                    onChange={(e) => setNewTask({ ...newTask, day: e.target.value })}
-                    className="w-full p-2.5 border border-slate-200 rounded-xl"
-                  >
-                    {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
-                  </select>
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Día de la semana:</label>
+                <div className="flex flex-wrap gap-2">
+                  {DAYS.map(d => (
+                    <button
+                      key={d}
+                      type="button"
+                      onClick={() => setNewTask({ ...newTask, day: d })}
+                      className={`px-3 py-2 rounded-xl text-xs font-bold border transition min-h-[40px] ${
+                        newTask.day === d
+                          ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                          : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                      }`}
+                      title={d}
+                    >
+                      {d.substring(0, 3)}
+                    </button>
+                  ))}
                 </div>
+              </div>
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Recurrencia:</label>
+                <select
+                  value={newTask.recurrence}
+                  onChange={(e) => setNewTask({ ...newTask, recurrence: e.target.value })}
+                  className="w-full p-2.5 border border-slate-200 rounded-xl"
+                >
+                  {RECURRENCE_OPTIONS.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Categoría:</label>
+                <div className="flex flex-wrap gap-2">
+                  {CATEGORIES.map(cat => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => setNewTask({ ...newTask, category: cat.id, icon: cat.icon })}
+                      className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition flex items-center gap-1 ${
+                        newTask.category === cat.id ? cat.color + ' ring-2 ring-offset-1 ring-slate-300' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      <span>{cat.icon}</span>
+                      <span>{cat.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="font-bold text-slate-700 block mb-1">Icono / Emoji:</label>
                   <input
@@ -1706,56 +2460,78 @@ export default function App() {
                     className="w-full p-2.5 border border-slate-200 rounded-xl"
                   />
                 </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Temporizador (min):</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={newTask.timerMinutes}
+                    onChange={(e) => setNewTask({ ...newTask, timerMinutes: e.target.value })}
+                    className="w-full p-2.5 border border-slate-200 rounded-xl"
+                  />
+                </div>
               </div>
-              <button
-                type="submit"
-                className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition"
-              >
-                Añadir Tarea
-              </button>
+              <div className="flex items-center gap-4 pt-1">
+                <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newTask.requiresPhoto}
+                    onChange={(e) => setNewTask({ ...newTask, requiresPhoto: e.target.checked })}
+                    className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span>Requiere foto</span>
+                </label>
+                <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newTask.isExtra}
+                    onChange={(e) => setNewTask({ ...newTask, isExtra: e.target.checked })}
+                    className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span>Bono extra</span>
+                </label>
+              </div>
             </form>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => { setShowAddTaskModal(false); resetNewTaskForm(); }}
+                className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleCreateTask}
+                data-testid="submit-task"
+                className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition"
+              >
+                {editingTask ? 'Guardar cambios' : 'Añadir Tarea'}
+              </button>
+            </div>
           </div>
         </div>
       )}
 
-      {showPayoutModal && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <div className="bg-white rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 max-h-[90vh] overflow-y-auto max-w-xs w-full shadow-2xl space-y-4 text-center">
-            <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto text-2xl">
-              💵
-            </div>
-            <div>
-              <h3 className="font-extrabold text-slate-800 text-base">Registrar Pago a {showPayoutModal.name}</h3>
-              <p className="text-xs text-slate-400 mt-1">Saldo acumulado actual: {Number(showPayoutModal.balance || 0).toFixed(2)}€</p>
-            </div>
-            <form onSubmit={handlePayout} className="space-y-3">
-              <input
-                type="number"
-                step="0.10"
-                value={payoutAmount}
-                onChange={(e) => setPayoutAmount(e.target.value)}
-                placeholder="Cantidad entregada en metálico"
-                className="w-full p-3 text-center text-lg font-bold border border-slate-200 rounded-xl"
-              />
-              <div className="flex space-x-2">
-                <button
-                  type="button"
-                  onClick={() => setShowPayoutModal(null)}
-                  className="flex-1 py-2.5 bg-slate-100 text-slate-600 font-bold text-xs rounded-xl"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl"
-                >
-                  Descontar Saldo
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <PayoutModal
+        showPayoutModal={showPayoutModal}
+        setShowPayoutModal={setShowPayoutModal}
+        payoutAmount={payoutAmount}
+        setPayoutAmount={setPayoutAmount}
+        handlePayout={handlePayout}
+      />
+
+      <PenaltyModal
+        showPenaltyModal={showPenaltyModal}
+        setShowPenaltyModal={setShowPenaltyModal}
+        penaltyAmount={penaltyAmount}
+        setPenaltyAmount={setPenaltyAmount}
+        penaltyReason={penaltyReason}
+        setPenaltyReason={setPenaltyReason}
+        handleApplyPenalty={handleApplyPenalty}
+      />
 
       {showAiGenModal && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
@@ -1796,15 +2572,16 @@ export default function App() {
                 <p className="text-xs font-bold text-slate-700">Sugerencias propuestas por la IA:</p>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
                   {aiGeneratedTasksList.map((t, idx) => (
-                    <div key={idx} className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
-                      <div className="flex items-center space-x-2">
-                        <span>{t.icon}</span>
+                    <div key={idx} className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-start justify-between text-xs">
+                      <div className="flex items-start space-x-2">
+                        <span className="text-lg">{t.icon}</span>
                         <div>
                           <p className="font-bold text-slate-800">{t.title}</p>
-                          <p className="text-[10px] text-slate-400">{t.day} • {t.category}</p>
+                          <p className="text-[10px] text-slate-400">{t.day} • {t.category}{t.timerMinutes ? ` • ⏱ ${t.timerMinutes}min` : ''}</p>
+                          {t.description && <p className="text-[10px] text-slate-500 mt-0.5">{t.description}</p>}
                         </div>
                       </div>
-                      <span className="font-bold text-emerald-600">+{t.reward}€</span>
+                      <span className="font-bold text-emerald-600 shrink-0">+{t.reward}€</span>
                     </div>
                   ))}
                 </div>
@@ -1860,6 +2637,187 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {showManageKidsModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-t-3xl sm:rounded-3xl p-4 sm:p-6 max-h-[90vh] overflow-y-auto max-w-lg w-full shadow-2xl space-y-4 my-auto">
+            <div className="flex justify-between items-center border-b pb-3">
+              <div className="flex items-center space-x-2 text-indigo-600 font-extrabold text-base">
+                <Users className="w-5 h-5" />
+                <h3 className="text-slate-800">Gestionar Hijos</h3>
+              </div>
+              <button onClick={() => setShowManageKidsModal(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {kids.map(kid => {
+                const color = KID_COLORS.find(c => c.id === kid.color) || KID_COLORS[0];
+                return (
+                  <div key={kid.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-2xl p-2 bg-white rounded-xl shadow-sm">{kid.avatar}</span>
+                      <div>
+                        <p className="font-bold text-sm text-slate-800">{kid.name}</p>
+                        <p className="text-xs text-slate-500">{kid.age} años • {color.label}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <button
+                        onClick={() => { setEditingKid(kid); }}
+                        className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition"
+                        title="Editar"
+                      >
+                        <Wand2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteKid(kid.id)}
+                        className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                        title="Eliminar"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+
+              <button
+                onClick={() => { setEditingKid(null); }}
+                className="w-full py-2.5 border border-dashed border-slate-300 rounded-xl text-slate-600 font-bold text-xs flex items-center justify-center gap-2 hover:bg-slate-50 transition"
+              >
+                <Plus className="w-4 h-4" /> Añadir nuevo hijo
+              </button>
+            </div>
+
+            {(editingKid === null || editingKid) && (
+              <form onSubmit={handleSaveKid} className="space-y-3 border-t pt-3">
+                <h4 className="text-xs font-bold text-slate-700 uppercase">
+                  {editingKid ? 'Editar hijo' : 'Añadir hijo'}
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Nombre</label>
+                    <input
+                      name="name"
+                      type="text"
+                      defaultValue={editingKid?.name || ''}
+                      placeholder="Nombre"
+                      required
+                      className="w-full p-2.5 text-xs border border-slate-200 rounded-xl"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Edad</label>
+                    <input
+                      name="age"
+                      type="number"
+                      min="1"
+                      max="18"
+                      defaultValue={editingKid?.age || 8}
+                      required
+                      className="w-full p-2.5 text-xs border border-slate-200 rounded-xl"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Objetivo semanal (€)</label>
+                    <input
+                      name="weeklyGoal"
+                      type="number"
+                      step="0.50"
+                      min="1"
+                      defaultValue={editingKid?.weeklyGoal || 10}
+                      required
+                      className="w-full p-2.5 text-xs border border-slate-200 rounded-xl"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Avatar</label>
+                  <div className="flex gap-2 justify-center max-h-40 overflow-y-auto overflow-x-hidden p-2 bg-slate-50 rounded-xl border border-slate-200" style={{ flexWrap: 'wrap' }}>
+                    {AVATAR_OPTIONS.map(av => (
+                      <label key={av} className="cursor-pointer flex-shrink-0" title={`Avatar ${av}`}>
+                        <input
+                          type="radio"
+                          name="avatar"
+                          value={av}
+                          defaultChecked={editingKid ? editingKid.avatar === av : av === '👧'}
+                          className="hidden peer"
+                        />
+                        <span className="text-xl w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center peer-checked:bg-indigo-100 peer-checked:border-indigo-500 peer-checked:scale-110 transition z-10 hover:bg-slate-50">
+                          {av}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Color del perfil</label>
+                  <div className="flex flex-wrap gap-2">
+                    {KID_COLORS.map(c => (
+                      <label key={c.id} className="cursor-pointer">
+                        <input
+                          type="radio"
+                          name="color"
+                          value={c.id}
+                          defaultChecked={editingKid ? editingKid.color === c.id : c.id === 'indigo'}
+                          className="hidden peer"
+                        />
+                        <span className={`px-3 py-2 rounded-xl text-xs font-bold text-white ${c.bg} border-2 border-transparent peer-checked:ring-2 peer-checked:ring-offset-1 peer-checked:ring-slate-400 transition`}>
+                          {c.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2 pt-2">
+                  <button
+                    type="submit"
+                    className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition"
+                  >
+                    {editingKid ? 'Guardar cambios' : 'Añadir hijo'}
+                  </button>
+                  {editingKid && (
+                    <button
+                      type="button"
+                      onClick={() => setEditingKid(null)}
+                      className="px-4 py-2.5 bg-slate-100 text-slate-600 font-bold text-xs rounded-xl hover:bg-slate-200 transition"
+                    >
+                      Cancelar
+                    </button>
+                  )}
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      <RewardStoreModal
+        show={showRewardStoreModal}
+        onClose={() => setShowRewardStoreModal(false)}
+        rewards={rewards}
+        currentKid={currentKid}
+        onRequest={handleRequestReward}
+      />
+
+      <ManageRewardsModal
+        show={showManageRewardsModal}
+        onClose={() => { setShowManageRewardsModal(false); setEditingReward(null); setNewReward({ name: '', description: '', price: '5.00', icon: '🎁', category: 'toys', stock: '' }); }}
+        rewards={rewards}
+        newReward={newReward}
+        setNewReward={setNewReward}
+        editingReward={editingReward}
+        setEditingReward={setEditingReward}
+        onSave={handleSaveReward}
+        onDelete={handleDeleteReward}
+        rewardIcons={REWARD_ICONS}
+        rewardCategories={REWARD_CATEGORIES}
+      />
     </div>
   );
 }
